@@ -11,6 +11,9 @@
       const count = document.getElementById('count');
       const updated = document.getElementById('updated');
       let records = [];
+      let allRecords = [];
+      let searchTimer = null;
+      let searchRequest = 0;
       const selected = new Set();
 
       function valueOf(row, aliases) {
@@ -74,7 +77,7 @@
         labels.replaceChildren();
         if (!indexes.length) {
           const empty = document.createElement('div'); empty.className = 'empty';
-          empty.textContent = records.length ? 'ไม่พบข้อมูลที่ตรงกับคำค้นหา' : 'ยังไม่มีข้อมูลในตาราง';
+          empty.textContent = search.value.trim() ? 'ไม่พบ productID ที่ตรงกับคำค้นหา' : 'ยังไม่มีข้อมูลในตาราง';
           labels.appendChild(empty);
         } else indexes.forEach(index => labels.appendChild(createCard(records[index], index)));
         updateSelectedCount();
@@ -100,8 +103,9 @@
           else { connection.textContent = 'SQL Server มีปัญหา'; connection.style.background = '#fee4e2'; connection.style.color = '#b42318'; }
           const payload = await dataResponse.json();
           if (!dataResponse.ok) throw new Error(payload.error || 'โหลดข้อมูลไม่สำเร็จ');
-          records = Array.isArray(payload.data) ? payload.data : [];
-          selected.clear(); totalCount.textContent = records.length.toLocaleString(); render();
+          allRecords = Array.isArray(payload.data) ? payload.data : [];
+          records = allRecords;
+          selected.clear(); totalCount.textContent = allRecords.length.toLocaleString(); render();
           updated.textContent = 'อัปเดต ' + new Date().toLocaleString('th-TH');
         } catch (error) {
           connection.textContent = 'เชื่อมต่อ API ไม่สำเร็จ'; connection.style.background = '#fee4e2'; connection.style.color = '#b42318';
@@ -109,7 +113,50 @@
           message.textContent = error.message + ' — ตรวจสอบการตั้งค่า DB และลองรีเฟรช'; labels.appendChild(message);
         } finally { refresh.disabled = false; refresh.textContent = '↻ รีเฟรช'; }
       }
-      search.addEventListener('input', render);
+
+      async function searchByProductID() {
+        const requestId = ++searchRequest;
+        const productID = search.value.trim();
+        if (!productID) {
+          records = allRecords;
+          selected.clear();
+          render();
+          return;
+        }
+
+        labels.replaceChildren();
+        const loading = document.createElement('div');
+        loading.className = 'empty';
+        loading.textContent = 'กำลังค้นหา productID…';
+        labels.appendChild(loading);
+
+        try {
+          const response = await fetch('/api/labels/search?productID=' + encodeURIComponent(productID));
+          const payload = await response.json();
+          if (requestId !== searchRequest) return;
+          if (response.status === 404) {
+            records = [];
+          } else if (!response.ok) {
+            throw new Error(payload.error || 'ค้นหาข้อมูลไม่สำเร็จ');
+          } else {
+            records = Array.isArray(payload.data) ? payload.data : [];
+          }
+          selected.clear();
+          render();
+          updated.textContent = 'ค้นหา productID: ' + productID + ' · ' + new Date().toLocaleString('th-TH');
+        } catch (error) {
+          if (requestId !== searchRequest) return;
+          labels.replaceChildren();
+          const message = document.createElement('div');
+          message.className = 'empty error';
+          message.textContent = error.message;
+          labels.appendChild(message);
+        }
+      }
+      search.addEventListener('input', () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(searchByProductID, 350);
+      });
       refresh.addEventListener('click', load);
       selectAll.addEventListener('click', () => {
         const indexes = filteredIndexes();
