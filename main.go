@@ -59,6 +59,8 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", a.health)
 	mux.HandleFunc("GET /api/labels", a.labels)
+	mux.Handle("GET /style/", http.StripPrefix("/style/", http.FileServer(http.Dir("style"))))
+	mux.Handle("GET /js/", http.StripPrefix("/js/", http.FileServer(http.Dir("js"))))
 	mux.HandleFunc("GET /", serveIndex)
 
 	server := &http.Server{
