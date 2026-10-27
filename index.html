@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scanbar | Label Prints</title>
+  <style>
+    :root{font-family:Inter,"Segoe UI",Tahoma,sans-serif;color:#172033;background:#f4f7fb;font-synthesis:none}
+    *{box-sizing:border-box}body{margin:0}.topbar{background:#111b31;color:#fff;padding:24px clamp(18px,4vw,48px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.brand{font-size:22px;font-weight:750;letter-spacing:.2px}.subtitle{font-size:13px;color:#aebbd2;margin-top:5px}.status{font-size:12px;padding:8px 11px;border-radius:999px;background:#263650;color:#dbe7ff}.wrap{max-width:1500px;margin:0 auto;padding:28px clamp(14px,3vw,36px)}.summary{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}.heading{margin:0;font-size:23px}.muted{color:#6c7890;font-size:13px;margin-top:6px}.tools{display:flex;gap:10px;flex-wrap:wrap}input{width:min(340px,72vw);padding:11px 13px;border:1px solid #d7deea;border-radius:10px;background:white;font-size:14px;outline:none}input:focus{border-color:#5978e8;box-shadow:0 0 0 3px #5978e81a}button{border:0;border-radius:10px;padding:11px 15px;background:#3859d9;color:white;font-weight:650;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.panel{background:#fff;border:1px solid #e4e9f2;border-radius:14px;box-shadow:0 8px 28px #15264b08;overflow:hidden}.table-wrap{overflow:auto;max-height:70vh}table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;white-space:nowrap}thead{position:sticky;top:0;z-index:1}th{background:#f0f4fb;color:#4b5872;text-align:left;font-weight:700;padding:13px 15px;border-bottom:1px solid #dfe6f1}td{padding:12px 15px;border-bottom:1px solid #edf0f6;color:#26324a;max-width:360px;overflow:hidden;text-overflow:ellipsis}tbody tr:hover{background:#f8faff}tbody tr:last-child td{border-bottom:0}.empty{padding:42px 18px;text-align:center;color:#738099}.foot{padding:12px 16px;border-top:1px solid #edf0f6;color:#758199;font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.error{color:#b42318}.tag{display:inline-block;background:#eaf0ff;color:#3152c8;border-radius:6px;padding:3px 7px;font-size:11px}@media(max-width:600px){.topbar{padding:18px}.wrap{padding:20px 12px}.heading{font-size:20px}.summary{align-items:stretch}.tools{width:100%}.tools input{flex:1;min-width:0}.tools button{padding-inline:12px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div><div class="brand">Scanbar <span class="tag">API</span></div><div class="subtitle">Inventory · Tbl_Label_Prints</div></div>
+    <div id="connection" class="status">กำลังตรวจสอบการเชื่อมต่อ…</div>
+  </header>
+  <main class="wrap">
+    <section class="summary">
+      <div><h1 class="heading">Label Print Records</h1><div class="muted">แสดงข้อมูลล่าสุดตามลำดับที่ SQL Server ส่งกลับมา สูงสุด 200 รายการ</div></div>
+      <div class="tools"><input id="search" type="search" placeholder="ค้นหาข้อมูลในตาราง…" aria-label="ค้นหาข้อมูล"><button id="refresh" type="button">↻ รีเฟรช</button></div>
+    </section>
+    <section class="panel">
+      <div class="table-wrap" id="tableWrap"><div class="empty">กำลังโหลดข้อมูล…</div></div>
+      <div class="foot"><span id="count">0 รายการ</span><span id="updated">ยังไม่ได้อัปเดต</span></div>
+    </section>
+  </main>
+<script>
+(() => {
+  const tableWrap = document.getElementById('tableWrap');
+  const search = document.getElementById('search');
+  const refresh = document.getElementById('refresh');
+  const count = document.getElementById('count');
+  const updated = document.getElementById('updated');
+  const connection = document.getElementById('connection');
+  let records = [];
+
+  function displayValue(value) {
+    if (value === null || value === undefined || value === '') return '—';
+    if (typeof value === 'object') return JSON.stringify(value);
+    return String(value);
+  }
+
+  function render() {
+    const term = search.value.trim().toLocaleLowerCase();
+    const filtered = records.filter(row => Object.values(row).some(value => displayValue(value).toLocaleLowerCase().includes(term)));
+    count.textContent = `${filtered.length.toLocaleString()} / ${records.length.toLocaleString()} รายการ`;
+    if (!filtered.length) {
+      tableWrap.replaceChildren();
+      const empty = document.createElement('div'); empty.className = 'empty';
+      empty.textContent = records.length ? 'ไม่พบข้อมูลที่ตรงกับคำค้นหา' : 'ยังไม่มีข้อมูลในตาราง';
+      tableWrap.appendChild(empty); return;
+    }
+    const columns = Object.keys(filtered[0]);
+    const table = document.createElement('table');
+    const thead = document.createElement('thead'); const headerRow = document.createElement('tr');
+    columns.forEach(column => { const th = document.createElement('th'); th.textContent = column; headerRow.appendChild(th); });
+    thead.appendChild(headerRow); table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    filtered.forEach(row => {
+      const tr = document.createElement('tr');
+      columns.forEach(column => { const td = document.createElement('td'); td.textContent = displayValue(row[column]); td.title = displayValue(row[column]); tr.appendChild(td); });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody); tableWrap.replaceChildren(table);
+  }
+
+  async function load() {
+    refresh.disabled = true; refresh.textContent = 'กำลังโหลด…';
+    try {
+      const [healthResponse, dataResponse] = await Promise.all([fetch('/api/health'), fetch('/api/labels')]);
+      if (healthResponse.ok) { connection.textContent = '● SQL Server เชื่อมต่อแล้ว'; connection.style.background = '#e1f8eb'; connection.style.color = '#17683a'; }
+      else { connection.textContent = 'SQL Server มีปัญหา'; connection.style.background = '#fee4e2'; connection.style.color = '#b42318'; }
+      const payload = await dataResponse.json();
+      if (!dataResponse.ok) throw new Error(payload.error || 'โหลดข้อมูลไม่สำเร็จ');
+      records = Array.isArray(payload.data) ? payload.data : [];
+      render(); updated.textContent = `อัปเดต ${new Date().toLocaleString('th-TH')}`;
+    } catch (error) {
+      connection.textContent = 'เชื่อมต่อ API ไม่สำเร็จ'; connection.style.background = '#fee4e2'; connection.style.color = '#b42318';
+      tableWrap.replaceChildren(); const message = document.createElement('div'); message.className = 'empty error';
+      message.textContent = `${error.message} — ตรวจสอบการตั้งค่า DB และลองรีเฟรช`; tableWrap.appendChild(message);
+    } finally { refresh.disabled = false; refresh.textContent = '↻ รีเฟรช'; }
+  }
+  search.addEventListener('input', render);
+  refresh.addEventListener('click', load);
+  load();
+})();
+</script>
+</body>
+</html>
