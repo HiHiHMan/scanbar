@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -17,6 +18,16 @@ import (
 	_ "github.com/microsoft/go-mssqldb"
 )
 
+// Settings: edit these defaults here, or override them with values in the local .env file.
+var (
+	defaultDBHost     = "192.168.123.45"
+	defaultDBPort     = "1433"
+	defaultDBName     = "Inventory"
+	defaultDBUser     = "" // Prefer setting DB_USER in .env
+	defaultDBPassword = "" // Prefer setting DB_PASSWORD in .env
+	defaultAPIAddr    = ":8080"
+)
+
 const labelsQuery = "SELECT TOP (200) * FROM [Inventory].[dbo].[Tbl_Label_Prints]"
 
 type app struct {
@@ -28,7 +39,10 @@ type apiError struct {
 }
 
 func main() {
-	addr := env("API_ADDR", ":8080")
+	if err := loadEnvFile(".env"); err != nil {
+		log.Printf("could not load .env: %v", err)
+	}
+	addr := env("API_ADDR", defaultAPIAddr)
 	db, err := openDatabase()
 	if err != nil {
 		log.Fatalf("database configuration error: %v", err)
@@ -61,15 +75,15 @@ func main() {
 }
 
 func openDatabase() (*sql.DB, error) {
-	host := strings.TrimSpace(env("DB_HOST", "192.168.123.45"))
-	portText := env("DB_PORT", "1433")
+	host := strings.TrimSpace(env("DB_HOST", defaultDBHost))
+	portText := env("DB_PORT", defaultDBPort)
 	port, err := strconv.Atoi(portText)
 	if err != nil || port < 1 || port > 65535 {
 		return nil, errors.New("DB_PORT must be a valid TCP port")
 	}
-	database := strings.TrimSpace(env("DB_NAME", "Inventory"))
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
+	database := strings.TrimSpace(env("DB_NAME", defaultDBName))
+	user := env("DB_USER", defaultDBUser)
+	password := env("DB_PASSWORD", defaultDBPassword)
 	if user == "" || password == "" {
 		return nil, errors.New("set DB_USER and DB_PASSWORD environment variables")
 	}
@@ -97,6 +111,40 @@ func urlEscape(value string) string {
 func urlQueryEscape(value string) string {
 	// Keep URL escaping in the standard library and avoid manual string handling.
 	return url.QueryEscape(value)
+}
+
+// loadEnvFile loads KEY=VALUE settings without overwriting existing OS environment variables.
+// Keep .env out of Git; commit only .env.example.
+func loadEnvFile(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil // .env is optional; system environment variables can be used instead.
+		}
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			continue
+		}
+		key = strings.TrimSpace(key)
+		value = strings.TrimSpace(value)
+		value = strings.Trim(value, "\\\"'")
+		if key != "" && os.Getenv(key) == "" {
+			if err := os.Setenv(key, value); err != nil {
+				return err
+			}
+		}
+	}
+	return scanner.Err()
 }
 
 func env(key, fallback string) string {
