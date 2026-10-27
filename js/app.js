@@ -153,9 +153,11 @@
           labels.appendChild(message);
         }
       }
-      search.addEventListener('input', () => {
+      search.addEventListener('keydown', event => {
+        if (event.key !== 'Enter') return;
+        event.preventDefault();
         clearTimeout(searchTimer);
-        searchTimer = setTimeout(searchByProductID, 350);
+        searchByProductID();
       });
       refresh.addEventListener('click', load);
       selectAll.addEventListener('click', () => {
