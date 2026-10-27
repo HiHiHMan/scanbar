@@ -130,12 +130,12 @@
     head.append(selectLabel, number);
     const data = labelData(row);
     const preview = document.createElement('div'); preview.className = 'label-preview';
-    preview.appendChild(makeLine('line-1', 'LINE 1 · FORM / LOCATION', "FORM " + data.location));
+    preview.appendChild(makeLine('line-1', '', "FORM " + data.location));
     const dimensions = [data.size1, data.size2, data.size3].filter(v => v && v !== '—');
     const sizeText = dimensions.length ? dimensions.join(' x ') : '—';
-    preview.appendChild(makeLine('line-2', 'LINE 2 · PRODUCT / SIZE', data.productID + '   ' + sizeText));
-    preview.appendChild(makeLine('line-3', 'LINE 3 · DESCRIPTION', data.description));
-    preview.appendChild(makeLine('line-4', 'LINE 4 · BARCODE', data.barcode));
+    preview.appendChild(makeLine('line-2', '', data.productID + '   ' + sizeText));
+    preview.appendChild(makeLine('line-3', '', data.description));
+    preview.appendChild(makeLine('line-4', '', data.barcode));
     const actions = document.createElement('div'); actions.className = 'item-actions';
     const printButton = document.createElement('button'); printButton.type = 'button'; printButton.textContent = 'พิมพ์ฉลากนี้';
     printButton.addEventListener('click', () => printCards([index]));
