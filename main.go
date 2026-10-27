@@ -59,6 +59,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", a.health)
 	mux.HandleFunc("GET /api/labels", a.labels)
+	mux.HandleFunc("GET /api/labels/search", a.searchLabels)
 	mux.Handle("GET /style/", http.StripPrefix("/style/", http.FileServer(http.Dir("style"))))
 	mux.Handle("GET /js/", http.StripPrefix("/js/", http.FileServer(http.Dir("js"))))
 	mux.HandleFunc("GET /", serveIndex)
@@ -211,6 +212,73 @@ func (a *app) labels(w http.ResponseWriter, r *http.Request) {
 	if err := rows.Err(); err != nil {
 		log.Printf("iterate label rows failed: %v", err)
 		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed while reading label records"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"count": len(data),
+		"data":  data,
+	})
+}
+
+func (a *app) searchLabels(w http.ResponseWriter, r *http.Request) {
+	productID := strings.TrimSpace(r.URL.Query().Get("productID"))
+	if productID == "" {
+		writeJSON(w, http.StatusBadRequest, apiError{Error: "productID query parameter is required"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	rows, err := a.db.QueryContext(ctx,
+		"SELECT TOP (200) * FROM [Inventory].[dbo].[Tbl_Label_Prints] WHERE [productID] = @p1",
+		productID,
+	)
+	if err != nil {
+		log.Printf("search labels by productID failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to search label records; check productID column and database permissions"})
+		return
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		log.Printf("read search result columns failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read search result columns"})
+		return
+	}
+
+	data := make([]map[string]any, 0)
+	for rows.Next() {
+		values := make([]any, len(columns))
+		dest := make([]any, len(columns))
+		for i := range values {
+			dest[i] = &values[i]
+		}
+		if err := rows.Scan(dest...); err != nil {
+			log.Printf("scan search result row failed: %v", err)
+			writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read a search result"})
+			return
+		}
+
+		item := make(map[string]any, len(columns))
+		for i, column := range columns {
+			value := values[i]
+			if bytes, ok := value.([]byte); ok {
+				value = string(bytes)
+			}
+			item[column] = value
+		}
+		data = append(data, item)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("iterate search results failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed while searching label records"})
+		return
+	}
+	if len(data) == 0 {
+		writeJSON(w, http.StatusNotFound, apiError{Error: "no label records found for this productID"})
 		return
 	}
 
