@@ -3,67 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scanbar | Label Prints</title>
+  <title>Scanbar | Label Studio</title>
   <style>
-    :root{font-family:Inter,"Segoe UI",Tahoma,sans-serif;color:#172033;background:#f4f7fb;font-synthesis:none}
-    *{box-sizing:border-box}body{margin:0}.topbar{background:#111b31;color:#fff;padding:24px clamp(18px,4vw,48px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.brand{font-size:22px;font-weight:750;letter-spacing:.2px}.subtitle{font-size:13px;color:#aebbd2;margin-top:5px}.status{font-size:12px;padding:8px 11px;border-radius:999px;background:#263650;color:#dbe7ff}.wrap{max-width:1500px;margin:0 auto;padding:28px clamp(14px,3vw,36px)}.summary{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}.heading{margin:0;font-size:23px}.muted{color:#6c7890;font-size:13px;margin-top:6px}.tools{display:flex;gap:10px;flex-wrap:wrap}input{width:min(340px,72vw);padding:11px 13px;border:1px solid #d7deea;border-radius:10px;background:white;font-size:14px;outline:none}input:focus{border-color:#5978e8;box-shadow:0 0 0 3px #5978e81a}button{border:0;border-radius:10px;padding:11px 15px;background:#3859d9;color:white;font-weight:650;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.panel{background:#fff;border:1px solid #e4e9f2;border-radius:14px;box-shadow:0 8px 28px #15264b08;overflow:hidden}.table-wrap{overflow:auto;max-height:70vh}table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;white-space:nowrap}thead{position:sticky;top:0;z-index:1}th{background:#f0f4fb;color:#4b5872;text-align:left;font-weight:700;padding:13px 15px;border-bottom:1px solid #dfe6f1}td{padding:12px 15px;border-bottom:1px solid #edf0f6;color:#26324a;max-width:360px;overflow:hidden;text-overflow:ellipsis}tbody tr:hover{background:#f8faff}tbody tr:last-child td{border-bottom:0}.empty{padding:42px 18px;text-align:center;color:#738099}.foot{padding:12px 16px;border-top:1px solid #edf0f6;color:#758199;font-size:12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.error{color:#b42318}.tag{display:inline-block;background:#eaf0ff;color:#3152c8;border-radius:6px;padding:3px 7px;font-size:11px}@media(max-width:600px){.topbar{padding:18px}.wrap{padding:20px 12px}.heading{font-size:20px}.summary{align-items:stretch}.tools{width:100%}.tools input{flex:1;min-width:0}.tools button{padding-inline:12px}}
+    :root{font-family:Inter,"Segoe UI",Tahoma,sans-serif;color:#172033;background:#f3f5f9;font-synthesis:none}
+    *{box-sizing:border-box}
+    body{margin:0}
+    .topbar{background:#111b31;color:#fff;padding:22px clamp(16px,4vw,44px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+    .brand{font-size:22px;font-weight:800;letter-spacing:.2px}.subtitle{font-size:13px;color:#aebbd2;margin-top:5px}
+    .status{font-size:12px;padding:8px 11px;border-radius:999px;background:#263650;color:#dbe7ff}
+    .wrap{max-width:1500px;margin:0 auto;padding:28px clamp(14px,3vw,36px)}
+    .intro{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+    h1{font-size:clamp(23px,3vw,30px);letter-spacing:-.5px;margin:0}.muted{color:#748097;font-size:13px;margin-top:7px}
+    .toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+    input[type=search]{width:min(330px,70vw);padding:11px 13px;border:1px solid #d7deea;border-radius:10px;background:#fff;font-size:14px;outline:none}
+    input[type=search]:focus{border-color:#5978e8;box-shadow:0 0 0 3px #5978e81a}
+    button{border:0;border-radius:10px;padding:11px 15px;background:#3859d9;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap}
+    button.secondary{background:#fff;color:#34415a;border:1px solid #dce2ec}
+    button:disabled{opacity:.55;cursor:wait}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .stat{background:#fff;border:1px solid #e4e9f2;border-radius:12px;padding:13px 16px;min-width:130px}
+    .stat strong{display:block;font-size:21px}.stat span{font-size:12px;color:#78849a}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,330px),1fr));gap:16px}
+    .item{background:#fff;border:1px solid #e0e6ef;border-radius:15px;padding:14px;box-shadow:0 5px 20px #15264b08;min-width:0}
+    .item-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .select-label{display:flex;align-items:center;gap:8px;font-size:12px;color:#6b778d}
+    input[type=checkbox]{width:16px;height:16px;accent-color:#3859d9}
+    .item-index{font-size:11px;color:#8290a6;font-weight:750;letter-spacing:.7px}
+    .label-preview{background:#fff;border:1px dashed #c6cedb;border-radius:5px;padding:12px 11px;min-height:160px;color:#111;overflow:hidden}
+    .label-line{font-family:Arial,sans-serif;line-height:1.25;overflow-wrap:anywhere}
+    .line-1{font-size:13px;font-weight:700;margin-bottom:7px}
+    .line-2{font-size:14px;font-weight:800;margin-bottom:7px;white-space:normal}
+    .line-3{font-size:13px;margin-bottom:10px;min-height:16px}
+    .line-4{font-family:"Courier New",monospace;font-size:19px;font-weight:800;letter-spacing:1.2px;overflow-wrap:anywhere;border-top:1px solid #e4e4e4;padding-top:7px}
+    .field-name{font-size:10px;color:#8993a5;display:block;margin-bottom:2px;font-family:Inter,"Segoe UI",sans-serif;font-weight:500;letter-spacing:0}
+    .item-actions{display:flex;justify-content:flex-end;margin-top:12px}
+    .item-actions button{padding:9px 12px;font-size:12px}
+    .empty{grid-column:1/-1;padding:48px 18px;text-align:center;color:#748097;background:#fff;border:1px solid #e4e9f2;border-radius:14px}
+    .error{color:#b42318}
+    .foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:18px;color:#78849a;font-size:12px}
+    @media(max-width:600px){.topbar{padding:18px}.wrap{padding:20px 12px}.intro{align-items:stretch}.toolbar{width:100%}input[type=search]{flex:1;min-width:0}.toolbar button{padding-inline:11px}.grid{grid-template-columns:1fr}}
+    @page{size:100mm 50mm;margin:0}
+    @media print{
+      body{background:#fff}.topbar,.intro,.stats,.item-head,.item-actions,.foot{display:none!important}
+      .wrap{padding:0;margin:0;max-width:none}.grid{display:block}
+      .item{display:none!important;background:#fff;border:0;border-radius:0;box-shadow:none;padding:3mm;width:100mm;height:50mm;break-after:page;page-break-after:always;overflow:hidden}
+      .item.print-target{display:block!important}
+      .label-preview{border:0;border-radius:0;padding:0;min-height:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:flex-start}
+      .line-1{font-size:10pt;margin-bottom:2mm}.line-2{font-size:11pt;margin-bottom:2mm}.line-3{font-size:10pt;margin-bottom:3mm}.line-4{font-size:15pt;padding-top:2mm}
+      .field-name{display:none}
+    }
   </style>
 </head>
 <body>
   <header class="topbar">
-    <div><div class="brand">Scanbar <span class="tag">API</span></div><div class="subtitle">Inventory · Tbl_Label_Prints</div></div>
+    <div><div class="brand">Scanbar <span class="status">LABEL STUDIO</span></div><div class="subtitle">Inventory · Tbl_Label_Prints · Label preview & print</div></div>
     <div id="connection" class="status">กำลังตรวจสอบการเชื่อมต่อ…</div>
   </header>
   <main class="wrap">
-    <section class="summary">
-      <div><h1 class="heading">Label Print Records</h1><div class="muted">แสดงข้อมูลล่าสุดตามลำดับที่ SQL Server ส่งกลับมา สูงสุด 200 รายการ</div></div>
-      <div class="tools"><input id="search" type="search" placeholder="ค้นหาข้อมูลในตาราง…" aria-label="ค้นหาข้อมูล"><button id="refresh" type="button">↻ รีเฟรช</button></div>
+    <section class="intro">
+      <div><h1>Label Print Studio</h1><div class="muted">เลือกข้อมูล แล้วพิมพ์เป็นฉลาก 4 บรรทัดสำหรับเครื่องพิมพ์ Label</div></div>
+      <div class="toolbar">
+        <input id="search" type="search" placeholder="ค้นหา Location, Product ID, Barcode…" aria-label="ค้นหาข้อมูล">
+        <button class="secondary" id="refresh" type="button">↻ รีเฟรช</button>
+        <button class="secondary" id="selectAll" type="button">เลือกทั้งหมด</button>
+        <button id="printSelected" type="button">พิมพ์ที่เลือก</button>
+      </div>
     </section>
-    <section class="panel">
-      <div class="table-wrap" id="tableWrap"><div class="empty">กำลังโหลดข้อมูล…</div></div>
-      <div class="foot"><span id="count">0 รายการ</span><span id="updated">ยังไม่ได้อัปเดต</span></div>
+    <section class="stats">
+      <div class="stat"><strong id="totalCount">—</strong><span>ข้อมูลทั้งหมด</span></div>
+      <div class="stat"><strong id="visibleCount">—</strong><span>รายการที่แสดง</span></div>
+      <div class="stat"><strong id="selectedCount">0</strong><span>รายการที่เลือกพิมพ์</span></div>
     </section>
+    <section id="labels" class="grid"><div class="empty">กำลังโหลดข้อมูล…</div></section>
+    <div class="foot"><span id="count">0 รายการ</span><span id="updated">ยังไม่ได้อัปเดต</span></div>
   </main>
 <script>
 (() => {
-  const tableWrap = document.getElementById('tableWrap');
+  const labels = document.getElementById('labels');
   const search = document.getElementById('search');
   const refresh = document.getElementById('refresh');
+  const selectAll = document.getElementById('selectAll');
+  const printSelected = document.getElementById('printSelected');
+  const connection = document.getElementById('connection');
+  const totalCount = document.getElementById('totalCount');
+  const visibleCount = document.getElementById('visibleCount');
+  const selectedCount = document.getElementById('selectedCount');
   const count = document.getElementById('count');
   const updated = document.getElementById('updated');
-  const connection = document.getElementById('connection');
   let records = [];
+  const selected = new Set();
 
-  function displayValue(value) {
-    if (value === null || value === undefined || value === '') return '—';
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
+  function valueOf(row, aliases) {
+    const keys = Object.keys(row);
+    const normalized = new Map(keys.map(key => [key.toLowerCase().replace(/[^a-z0-9]/g, ''), key]));
+    for (const alias of aliases) {
+      const key = normalized.get(alias.toLowerCase().replace(/[^a-z0-9]/g, ''));
+      if (key !== undefined && row[key] !== null && row[key] !== undefined && String(row[key]).trim() !== '') return String(row[key]).trim();
+    }
+    return '';
   }
-
-  function render() {
+  function field(row, aliases) { return valueOf(row, aliases) || '—'; }
+  function labelData(row) {
+    return {
+      location: field(row, ['location','loc','locationcode','warehouseLocation','binLocation','whLocation']),
+      productID: field(row, ['productID','productId','productCode','itemCode','sku','partNo','product']),
+      size1: valueOf(row, ['size','size1','length','productLength','dim1']),
+      size2: valueOf(row, ['size2','width','productWidth','dim2']),
+      size3: valueOf(row, ['size3','height','productHeight','dim3']),
+      description: field(row, ['description','productDescription','itemDescription','productName','name']),
+      barcode: field(row, ['barcode','barCode','barcodeNo','barcodeValue','ean','upc'])
+    };
+  }
+  function makeLine(className, label, text) {
+    const line = document.createElement('div'); line.className = 'label-line ' + className;
+    const caption = document.createElement('span'); caption.className = 'field-name'; caption.textContent = label;
+    line.appendChild(caption); line.appendChild(document.createTextNode(text)); return line;
+  }
+  function createCard(row, index) {
+    const card = document.createElement('article'); card.className = 'item'; card.dataset.index = String(index);
+    const head = document.createElement('div'); head.className = 'item-head';
+    const selectLabel = document.createElement('label'); selectLabel.className = 'select-label';
+    const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.checked = selected.has(index); checkbox.setAttribute('aria-label', 'เลือกฉลาก ' + (index + 1));
+    checkbox.addEventListener('change', () => { checkbox.checked ? selected.add(index) : selected.delete(index); updateSelectedCount(); });
+    selectLabel.append(checkbox, document.createTextNode('เลือกพิมพ์'));
+    const number = document.createElement('span'); number.className = 'item-index'; number.textContent = 'LABEL ' + String(index + 1).padStart(3, '0');
+    head.append(selectLabel, number);
+    const data = labelData(row);
+    const preview = document.createElement('div'); preview.className = 'label-preview';
+    preview.appendChild(makeLine('line-1', 'LINE 1 · FORM / LOCATION', "FORM " + data.location));
+    const dimensions = [data.size1, data.size2, data.size3].filter(v => v && v !== '—');
+    const sizeText = dimensions.length ? dimensions.join(' x ') : '—';
+    preview.appendChild(makeLine('line-2', 'LINE 2 · PRODUCT / SIZE', data.productID + '   ' + sizeText));
+    preview.appendChild(makeLine('line-3', 'LINE 3 · DESCRIPTION', data.description));
+    preview.appendChild(makeLine('line-4', 'LINE 4 · BARCODE', data.barcode));
+    const actions = document.createElement('div'); actions.className = 'item-actions';
+    const printButton = document.createElement('button'); printButton.type = 'button'; printButton.textContent = 'พิมพ์ฉลากนี้';
+    printButton.addEventListener('click', () => printCards([index]));
+    actions.appendChild(printButton);
+    card.append(head, preview, actions);
+    return card;
+  }
+  function filteredIndexes() {
     const term = search.value.trim().toLocaleLowerCase();
-    const filtered = records.filter(row => Object.values(row).some(value => displayValue(value).toLocaleLowerCase().includes(term)));
-    count.textContent = `${filtered.length.toLocaleString()} / ${records.length.toLocaleString()} รายการ`;
-    if (!filtered.length) {
-      tableWrap.replaceChildren();
+    return records.map((row, index) => ({row,index})).filter(({row}) => !term || Object.values(row).some(value => String(value ?? '').toLocaleLowerCase().includes(term))).map(({index}) => index);
+  }
+  function render() {
+    const indexes = filteredIndexes();
+    visibleCount.textContent = indexes.length.toLocaleString();
+    count.textContent = indexes.length.toLocaleString() + ' / ' + records.length.toLocaleString() + ' รายการ';
+    labels.replaceChildren();
+    if (!indexes.length) {
       const empty = document.createElement('div'); empty.className = 'empty';
       empty.textContent = records.length ? 'ไม่พบข้อมูลที่ตรงกับคำค้นหา' : 'ยังไม่มีข้อมูลในตาราง';
-      tableWrap.appendChild(empty); return;
-    }
-    const columns = Object.keys(filtered[0]);
-    const table = document.createElement('table');
-    const thead = document.createElement('thead'); const headerRow = document.createElement('tr');
-    columns.forEach(column => { const th = document.createElement('th'); th.textContent = column; headerRow.appendChild(th); });
-    thead.appendChild(headerRow); table.appendChild(thead);
-    const tbody = document.createElement('tbody');
-    filtered.forEach(row => {
-      const tr = document.createElement('tr');
-      columns.forEach(column => { const td = document.createElement('td'); td.textContent = displayValue(row[column]); td.title = displayValue(row[column]); tr.appendChild(td); });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody); tableWrap.replaceChildren(table);
+      labels.appendChild(empty);
+    } else indexes.forEach(index => labels.appendChild(createCard(records[index], index)));
+    updateSelectedCount();
   }
-
+  function updateSelectedCount() {
+    selectedCount.textContent = selected.size.toLocaleString();
+    printSelected.disabled = selected.size === 0;
+    selectAll.textContent = filteredIndexes().every(index => selected.has(index)) && filteredIndexes().length ? 'ยกเลิกเลือก' : 'เลือกทั้งหมด';
+  }
+  function printCards(indexes) {
+    if (!indexes.length) return;
+    document.querySelectorAll('.item').forEach(card => {
+      card.classList.toggle('print-target', indexes.includes(Number(card.dataset.index)));
+    });
+    window.print();
+  }
+  window.addEventListener('afterprint', () => document.querySelectorAll('.item').forEach(card => card.classList.remove('print-target')));
   async function load() {
     refresh.disabled = true; refresh.textContent = 'กำลังโหลด…';
     try {
@@ -73,15 +181,23 @@
       const payload = await dataResponse.json();
       if (!dataResponse.ok) throw new Error(payload.error || 'โหลดข้อมูลไม่สำเร็จ');
       records = Array.isArray(payload.data) ? payload.data : [];
-      render(); updated.textContent = `อัปเดต ${new Date().toLocaleString('th-TH')}`;
+      selected.clear(); totalCount.textContent = records.length.toLocaleString(); render();
+      updated.textContent = 'อัปเดต ' + new Date().toLocaleString('th-TH');
     } catch (error) {
       connection.textContent = 'เชื่อมต่อ API ไม่สำเร็จ'; connection.style.background = '#fee4e2'; connection.style.color = '#b42318';
-      tableWrap.replaceChildren(); const message = document.createElement('div'); message.className = 'empty error';
-      message.textContent = `${error.message} — ตรวจสอบการตั้งค่า DB และลองรีเฟรช`; tableWrap.appendChild(message);
+      labels.replaceChildren(); const message = document.createElement('div'); message.className = 'empty error';
+      message.textContent = error.message + ' — ตรวจสอบการตั้งค่า DB และลองรีเฟรช'; labels.appendChild(message);
     } finally { refresh.disabled = false; refresh.textContent = '↻ รีเฟรช'; }
   }
   search.addEventListener('input', render);
   refresh.addEventListener('click', load);
+  selectAll.addEventListener('click', () => {
+    const indexes = filteredIndexes();
+    const allSelected = indexes.length > 0 && indexes.every(index => selected.has(index));
+    indexes.forEach(index => allSelected ? selected.delete(index) : selected.add(index));
+    render();
+  });
+  printSelected.addEventListener('click', () => printCards([...selected]));
   load();
 })();
 </script>
