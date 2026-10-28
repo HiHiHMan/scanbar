@@ -207,7 +207,7 @@
 
     .line-1 {
       font-size: 20px;
-      font-weight: 700;
+      font-weight: 400;
       margin-bottom: 7px
     }
 
@@ -217,7 +217,7 @@
       align-items: center;
       gap: 6px;
       width: 100%;
-      font-size: 20px;
+      font-size: 24px;
       font-weight: 800;
       margin-bottom: 7px;
       white-space: normal
@@ -399,7 +399,7 @@
       }
 
       .line-2 {
-        font-size: 20px;
+        font-size: 24px;
         gap: 2mm;
         margin-bottom: 2mm
       }
