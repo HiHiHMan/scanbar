@@ -4,6 +4,8 @@
   const clearSearch = document.getElementById('clearSearch');
   const searchResults = document.getElementById('searchResults');
   const printSelected = document.getElementById('printSelected');
+  const printAll = document.getElementById('printAll');
+  const selectedLabels = new Set();
   const connection = document.getElementById('connection');
   const selectedCount = document.getElementById('selectedCount');
   const count = document.getElementById('count');
@@ -180,23 +182,38 @@
         head.className = 'item-head';
         const label = document.createElement('span');
         label.className = 'item-index';
-        label.textContent = 'รายการ ' + String(itemIndex + 1).padStart(2, '0');
+        label.textContent = 'ฉลาก ' + String(itemIndex + 1).padStart(2, '0');
+        const selectionKey = boxIndex + '::' + itemKey(item);
+        const selectWrap = document.createElement('label');
+        selectWrap.className = 'label-select';
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = selectedLabels.has(selectionKey);
+        checkbox.setAttribute('aria-label', 'เลือกฉลาก ' + (itemIndex + 1) + ' สำหรับพิมพ์');
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) selectedLabels.add(selectionKey);
+          else selectedLabels.delete(selectionKey);
+          updatePrintSelectionUI();
+        });
+        selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove-button';
         remove.textContent = 'ลบ';
         remove.addEventListener('click', () => {
+          selectedLabels.delete(boxIndex + '::' + itemKey(item));
           boxes[boxIndex].splice(itemIndex, 1);
           renderBoxes();
           renderSearchResults();
         });
-        head.append(label, remove);
+        head.append(label, selectWrap, remove);
         card.append(head, createLabelPreview(item));
         container.appendChild(card);
       });
     });
     selectedCount.textContent = total.toLocaleString();
-    printSelected.disabled = total === 0;
+    printAll.disabled = total === 0;
+    updatePrintSelectionUI();
     boxTabs.replaceChildren();
     boxes.forEach((items, boxIndex) => {
       const tab = document.createElement('button');
@@ -210,11 +227,20 @@
     });
   }
 
-  function printQueue(boxIndex = null) {
+  function updatePrintSelectionUI() {
+    const selectedCount = selectedLabels.size;
+    printSelected.disabled = selectedCount === 0;
+    printSelected.textContent = 'พิมพ์ฉลากที่เลือก (' + selectedCount + ')';
+  }
+
+  function printQueue(boxIndex = null, selectedOnly = false) {
     const cards = document.querySelectorAll('.queue-item');
     let hasItems = false;
     cards.forEach(card => {
-      const shouldPrint = boxIndex === null || Number(card.dataset.box) === boxIndex;
+      const item = boxes[Number(card.dataset.box)]?.[Number(card.dataset.itemIndex)];
+      const key = item ? Number(card.dataset.box) + '::' + itemKey(item) : '';
+      const inRequestedBox = boxIndex === null || Number(card.dataset.box) === boxIndex;
+      const shouldPrint = inRequestedBox && (!selectedOnly || selectedLabels.has(key));
       card.classList.toggle('print-target', shouldPrint);
       if (shouldPrint) hasItems = true;
     });
@@ -290,10 +316,12 @@
     updated.textContent = 'ล้างคำค้นหาแล้ว';
     search.focus();
   });
-  printSelected.addEventListener('click', () => printQueue());
+  printSelected.addEventListener('click', () => printQueue(null, true));
+  printAll.addEventListener('click', () => printQueue());
   [0, 1, 2].forEach(index => {
     const number = index + 1;
     document.getElementById('clearBox' + number).addEventListener('click', () => {
+      boxes[index].forEach(item => selectedLabels.delete(index + '::' + itemKey(item)));
       boxes[index] = [];
       renderBoxes();
       renderSearchResults();
