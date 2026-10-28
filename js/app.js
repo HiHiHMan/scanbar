@@ -85,11 +85,7 @@
         barcodeBars.className = 'barcode-bars';
         barcodeBars.textContent = data.barcode === '—' ? '' : '*' + data.barcode + '*';
 
-        const barcodeNumber = document.createElement('div');
-        barcodeNumber.className = 'barcode-number';
-        barcodeNumber.textContent = data.barcode === '—' ? '' : data.barcode;
-
-        barcodeLine.append(barcodeBars, barcodeNumber);
+        barcodeLine.appendChild(barcodeBars);
         preview.appendChild(barcodeLine);
         const actions = document.createElement('div'); actions.className = 'item-actions';
         const printButton = document.createElement('button'); printButton.type = 'button'; printButton.textContent = 'พิมพ์ฉลากนี้';
