@@ -261,7 +261,7 @@
 
     .barcode-bars {
       font-family: "Barcode", sans-serif;
-      font-size: 40px;
+      font-size: 50px;
       font-weight: normal;
       line-height: 1.15;
       letter-spacing: .5px;
@@ -434,7 +434,7 @@
       }
 
       .barcode-bars {
-        font-size: 40px
+        font-size: 50px
       }
 
       .field-name {
