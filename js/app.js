@@ -28,13 +28,13 @@
       function field(row, aliases) { return valueOf(row, aliases) || '—'; }
       function labelData(row) {
         return {
-          location: field(row, ['location', 'loc', 'locationcode', 'warehouseLocation', 'binLocation', 'whLocation']),
-          productID: field(row, ['productID', 'productId', 'productCode', 'itemCode', 'sku', 'partNo', 'product']),
-          size1: valueOf(row, ['size', 'size1', 'length', 'productLength', 'dim1']),
-          size2: valueOf(row, ['size2', 'width', 'productWidth', 'dim2']),
-          size3: valueOf(row, ['size3', 'height', 'productHeight', 'dim3']),
-          description: field(row, ['description', 'productDescription', 'itemDescription', 'productName', 'name']),
-          barcode: field(row, ['barcode', 'barCode', 'barcodeNo', 'barcodeValue', 'ean', 'upc'])
+          location: field(row, ['Location']),
+          productID: field(row, ['ProductID']),
+          size1: valueOf(row, ['PSize1']),
+          size2: valueOf(row, ['PSize2']),
+          size3: valueOf(row, ['PSize3']),
+          description: field(row, ['Description']),
+          barcode: field(row, ['BarcodeNo'])
         };
       }
       function makeLine(className, label, text) {
