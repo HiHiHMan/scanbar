@@ -136,11 +136,22 @@
     return [data.location, data.productID, data.barcode].join('|');
   }
 
-  function addToBox(row, boxIndex) {
+  async function addToBox(row, boxIndex) {
     if (boxes[boxIndex].some(item => itemKey(item) === itemKey(row))) return;
-    boxes[boxIndex].push(row);
-    renderBoxes();
-    renderSearchResults(boxIndex);
+    const barcode = valueOf(row, ['BarcodeNo', 'Barcode']);
+    if (!barcode) {
+      updated.textContent = 'ไม่สามารถเพิ่มได้: รายการนี้ไม่มี Barcode';
+      return;
+    }
+    try {
+      await managePrintList({ action: 'insert', barcode, category: 'Box' + (boxIndex + 1) });
+      boxes[boxIndex].push(row);
+      renderBoxes();
+      renderSearchResults(boxIndex);
+      updated.textContent = 'เพิ่ม Barcode เข้า Box ' + (boxIndex + 1) + ' แล้ว';
+    } catch (error) {
+      updated.textContent = 'เพิ่มรายการไม่สำเร็จ: ' + error.message;
+    }
   }
 
   function renderSearchResults(boxIndex) {
@@ -222,11 +233,24 @@
         remove.type = 'button';
         remove.className = 'remove-button';
         setButtonIcon(remove, 'trash', 'ลบ');
-        remove.addEventListener('click', () => {
-          selectedLabels.delete(boxIndex + '::' + itemKey(item));
-          boxes[boxIndex].splice(itemIndex, 1);
-          renderBoxes();
-          renderSearchResults(boxIndex);
+        remove.addEventListener('click', async () => {
+          const barcode = valueOf(item, ['BarcodeNo', 'Barcode']);
+          if (!barcode) {
+            updated.textContent = 'ไม่สามารถลบได้: ไม่พบ Barcode';
+            return;
+          }
+          remove.disabled = true;
+          try {
+            await managePrintList({ action: 'delete', barcode, category: 'Box' + (boxIndex + 1) });
+            selectedLabels.delete(boxIndex + '::' + itemKey(item));
+            boxes[boxIndex].splice(itemIndex, 1);
+            renderBoxes();
+            renderSearchResults(boxIndex);
+            updated.textContent = 'ลบ Barcode ออกจาก Box ' + (boxIndex + 1) + ' แล้ว';
+          } catch (error) {
+            updated.textContent = 'ลบรายการไม่สำเร็จ: ' + error.message;
+            remove.disabled = false;
+          }
         });
         head.append(label, selectWrap, printButton, remove);
         card.append(head, createLabelPreview(item));
@@ -311,6 +335,39 @@
     document.querySelectorAll('.queue-item').forEach(card => card.classList.remove('print-target', 'print-last'));
   });
 
+  async function managePrintList(payload) {
+    const response = await fetch('/api/label-print-list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'API request failed');
+    return result;
+  }
+
+  async function loadPrintList() {
+    try {
+      const response = await fetch('/api/label-print-list');
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'โหลดรายการ Box ไม่สำเร็จ');
+      boxes.forEach(items => items.splice(0, items.length));
+      (Array.isArray(payload.data) ? payload.data : []).forEach(row => {
+        const category = valueOf(row, ['Category']);
+        const boxIndex = ({ Box1: 0, Box2: 1, Box3: 2 })[category];
+        if (boxIndex === undefined) return;
+        if (!boxes[boxIndex].some(item => itemKey(item) === itemKey(row))) {
+          boxes[boxIndex].push(row);
+        }
+      });
+      renderBoxes();
+      boxSearches.forEach((_, index) => renderSearchResults(index));
+      updated.textContent = 'โหลดรายการจากฐานข้อมูลแล้ว';
+    } catch (error) {
+      updated.textContent = 'โหลดรายการ Box ไม่สำเร็จ: ' + error.message;
+    }
+  }
+
   async function checkConnection() {
     try {
       const response = await fetch('/api/health');
@@ -361,11 +418,21 @@
   printSelectedButtons.forEach((button, boxIndex) => button.addEventListener('click', () => printQueue(boxIndex, true)));
   [0, 1, 2].forEach(index => {
     const number = index + 1;
-    document.getElementById('clearBox' + number).addEventListener('click', () => {
-      boxes[index].forEach(item => selectedLabels.delete(index + '::' + itemKey(item)));
-      boxes[index] = [];
-      renderBoxes();
-      renderSearchResults(index);
+    document.getElementById('clearBox' + number).addEventListener('click', async event => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      try {
+        await managePrintList({ action: 'clearCategory', category: 'Box' + number });
+        boxes[index].forEach(item => selectedLabels.delete(index + '::' + itemKey(item)));
+        boxes[index] = [];
+        renderBoxes();
+        renderSearchResults(index);
+        updated.textContent = 'ล้างรายการ Box ' + number + ' แล้ว';
+      } catch (error) {
+        updated.textContent = 'ล้าง Box ไม่สำเร็จ: ' + error.message;
+      } finally {
+        button.disabled = boxes[index].length === 0;
+      }
     });
     document.getElementById('printBox' + number).addEventListener('click', () => printQueue(index));
   });
@@ -373,5 +440,6 @@
   decorateStaticButtons();
   renderBoxes();
   boxSearches.forEach((_, index) => renderSearchResults(index));
+  loadPrintList();
   checkConnection();
 })();
