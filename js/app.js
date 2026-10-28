@@ -196,6 +196,20 @@
           updatePrintSelectionUI();
         });
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
+        const previewButton = document.createElement('button');
+        previewButton.type = 'button';
+        previewButton.className = 'secondary label-action';
+        previewButton.textContent = 'Preview';
+        previewButton.addEventListener('click', () => {
+          card.classList.add('label-preview-focus');
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          window.setTimeout(() => card.classList.remove('label-preview-focus'), 1800);
+        });
+        const printButton = document.createElement('button');
+        printButton.type = 'button';
+        printButton.className = 'label-action';
+        printButton.textContent = 'Print';
+        printButton.addEventListener('click', () => printSingleLabel(boxIndex, itemIndex));
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove-button';
@@ -206,7 +220,7 @@
           renderBoxes();
           renderSearchResults();
         });
-        head.append(label, selectWrap, remove);
+        head.append(label, selectWrap, previewButton, printButton, remove);
         card.append(head, createLabelPreview(item));
         container.appendChild(card);
       });
@@ -225,6 +239,16 @@
       tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); renderSearchResults(); targetBoxLabel.textContent = 'Box ' + (activeBox + 1); addColumnTitle.textContent = 'เพิ่มลง Box ' + (activeBox + 1); });
       boxTabs.appendChild(tab);
     });
+  }
+
+  function printSingleLabel(boxIndex, itemIndex) {
+    let found = false;
+    document.querySelectorAll('.queue-item').forEach(card => {
+      const matches = Number(card.dataset.box) === boxIndex && Number(card.dataset.itemIndex) === itemIndex;
+      card.classList.toggle('print-target', matches);
+      if (matches) found = true;
+    });
+    if (found) window.print();
   }
 
   function updatePrintSelectionUI() {
