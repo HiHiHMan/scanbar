@@ -995,13 +995,11 @@ button:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }
 .search-panel { border-color: #d9e4f4; }
 .search-panel > label { color: #1c3156; font-size: 16px; }
 .search-hint { margin-bottom: 14px; }
-.workflow-steps {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin: 4px 0 18px;
 }
-.workflow-step {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1013,7 +1011,6 @@ button:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }
   color: #344563;
   font-size: 13px;
 }
-.workflow-step span {
   display: grid;
   place-items: center;
   flex: 0 0 28px;
@@ -1066,14 +1063,11 @@ button:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }
 .empty { background: #f8faff; border: 1px dashed #cbd7e8; }
 @media (max-width: 760px) {
   .intro { padding: 18px; }
-  .workflow-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .global-actions { width: 100%; }
   .global-actions button { flex: 1 1 140px; }
   .box-actions button { min-width: 0; }
 }
 @media (max-width: 420px) {
-  .workflow-step { padding: 9px; font-size: 12px; gap: 7px; }
-  .workflow-step span { flex-basis: 25px; width: 25px; height: 25px; }
   .global-actions { align-items: stretch; }
   .queue-count { width: 100%; }
 }
