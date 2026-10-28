@@ -130,7 +130,7 @@
     barcodeLine.className = 'label-line line-4';
     const barcodeBars = document.createElement('div');
     barcodeBars.className = 'barcode-bars';
-    barcodeBars.textContent = data.barcode;
+    barcodeBars.textContent = '*' + data.barcode.replace(/^\*+|\*+$/g, '') + '*';
     barcodeLine.appendChild(barcodeBars);
     preview.appendChild(barcodeLine);
 
@@ -331,7 +331,7 @@
   async function printAfterFontsReady() {
     try {
       if (document.fonts && document.fonts.load) {
-        await document.fonts.load('55px "BarcodeFont"');
+        await document.fonts.load('55px "LibreBarcode39"');
         await document.fonts.ready;
       }
     } catch (error) {
