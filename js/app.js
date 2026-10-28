@@ -130,7 +130,9 @@
       const footer = document.createElement('div');
       footer.className = 'label-footer';
       const date = document.createElement('span');
-      date.textContent = 'dd/mm/yyyy';
+      const today = new Date();
+      date.textContent = [today.getDate(), today.getMonth() + 1, today.getFullYear()]
+        .map(part => String(part).padStart(2, '0')).join('/');
       const quantity = document.createElement('span');
       quantity.textContent = 'x';
       footer.append(date, quantity);
