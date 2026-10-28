@@ -363,12 +363,12 @@ func (a *app) manageLabelPrintList(w http.ResponseWriter, r *http.Request) {
 	req.Action = strings.ToLower(strings.TrimSpace(req.Action))
 	req.Barcode = strings.TrimSpace(req.Barcode)
 	req.Category = strings.TrimSpace(req.Category)
-	validCategories := map[string]bool{"Box1": true, "Box2": true, "Box3": true}
+	validCategories := map[string]bool{"Label Repack": true, "Label ประตูรับ": true, "Label หน้าโหลด": true}
 
 	switch req.Action {
 	case "insert":
 		if req.Barcode == "" || !validCategories[req.Category] {
-			writeJSON(w, http.StatusBadRequest, apiError{Error: "barcode and a valid category (Box1, Box2, Box3) are required"})
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "barcode and a valid category (Label Repack, Label ประตูรับ, Label หน้าโหลด) are required"})
 			return
 		}
 	case "delete":
@@ -378,7 +378,7 @@ func (a *app) manageLabelPrintList(w http.ResponseWriter, r *http.Request) {
 		}
 	case "clearcategory":
 		if !validCategories[req.Category] {
-			writeJSON(w, http.StatusBadRequest, apiError{Error: "a valid category (Box1, Box2, Box3) is required"})
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "a valid category (Label Repack, Label ประตูรับ, Label หน้าโหลด) is required"})
 			return
 		}
 	case "builddata":
