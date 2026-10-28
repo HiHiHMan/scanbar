@@ -1426,3 +1426,15 @@ button.secondary {
     line-height: 1;
   }
 }
+
+
+/* Loading label: add space below description line */
+.box-items .label-preview--loading .line-3-loading {
+  margin-bottom: 8px;
+}
+
+@media print {
+  .box-items .queue-item.print-target .label-preview--loading .line-3-loading {
+    margin-bottom: 2mm !important;
+  }
+}
