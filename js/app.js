@@ -233,13 +233,15 @@
     // Do not open the print dialog unless this label still exists in the selected Box.
     if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
 
-    let found = false;
+    let target = null;
     document.querySelectorAll('.queue-item').forEach(card => {
+      card.classList.remove('print-target');
       const matches = Number(card.dataset.box) === boxIndex && Number(card.dataset.itemIndex) === itemIndex;
-      card.classList.toggle('print-target', matches);
-      if (matches) found = true;
+      if (matches) target = card;
     });
-    if (found) window.print();
+    if (!target) return;
+    target.classList.add('print-target');
+    window.print();
   }
 
   function updatePrintSelectionUI() {
