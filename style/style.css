@@ -1288,3 +1288,76 @@ button.secondary {
     background: linear-gradient(135deg, #fff8ed 0%, #f8e8d8 100%);
   }
 }
+
+
+/* Definitive label printing rules: borderless, exact label size, no trailing blank page */
+@page { size: 76.2mm 50.8mm; margin: 0; }
+@media print {
+  html, body, main, .wrap, .boxes-section, .boxes-grid, .queue-section, .box-items {
+    width: 76.2mm !important;
+    min-width: 0 !important;
+    max-width: 76.2mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+  .topbar, .intro, .stats, .box-tabs, .section-heading, .search-panel,
+  .item-head, .item-actions, .label-select, .foot, #dotCanvas {
+    display: none !important;
+  }
+  .queue-section, .box-items { display: contents !important; }
+  .box-items .empty, .box-items .queue-item:not(.print-target) { display: none !important; }
+  .box-items .queue-item.print-target {
+    display: block !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    width: 76.2mm !important;
+    height: 50.8mm !important;
+    min-height: 50.8mm !important;
+    max-height: 50.8mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    overflow: hidden !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+  .box-items .queue-item.print-target.print-last {
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
+  .box-items .queue-item.print-target .label-preview {
+    display: flex !important;
+    box-sizing: border-box !important;
+    width: 76.2mm !important;
+    height: 50.8mm !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 1.5mm 2mm !important;
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    overflow: hidden !important;
+  }
+  .box-items .queue-item.print-target .barcode-bars {
+    display: block !important;
+    visibility: visible !important;
+    font-family: "Barcode", sans-serif !important;
+    font-size: 55px !important;
+    font-weight: normal !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
