@@ -1405,7 +1405,7 @@ button.secondary {
   align-items: center;
   width: 100%;
   margin-top: 2px;
-  padding: 0 4px;
+  padding-inline: 8px;
   color: #000;
   font-family: Arial, sans-serif;
   font-size: 13px;
@@ -1421,7 +1421,7 @@ button.secondary {
   .box-items .queue-item.print-target .label-preview--loading .label-footer {
     flex: 0 0 auto;
     margin-top: 0;
-    padding: 0 1mm;
+    padding-inline: 2mm;
     font-size: 12px;
     line-height: 1;
   }
