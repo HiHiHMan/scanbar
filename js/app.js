@@ -143,7 +143,10 @@
         .map(part => String(part).padStart(2, '0')).join('/');
       const quantity = document.createElement('span');
       quantity.textContent = 'x';
-      footer.append(date, quantity);
+      const runNumber = document.createElement('span');
+      runNumber.className = 'run-number';
+      runNumber.textContent = 'RUN: 0001';
+      footer.append(date, quantity, runNumber);
       preview.appendChild(footer);
     }
 
@@ -255,6 +258,22 @@
           updatePrintSelectionUI();
         });
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
+        let quantityInput = null;
+        if (boxIndex === 2) {
+          const quantityWrap = document.createElement('label');
+          quantityWrap.className = 'print-quantity-wrap';
+          quantityWrap.appendChild(document.createTextNode('จำนวนใบ'));
+          quantityInput = document.createElement('input');
+          quantityInput.className = 'print-quantity';
+          quantityInput.type = 'number';
+          quantityInput.min = '1';
+          quantityInput.max = '500';
+          quantityInput.step = '1';
+          quantityInput.value = '1';
+          quantityInput.inputMode = 'numeric';
+          quantityInput.setAttribute('aria-label', 'จำนวนใบสำหรับ Barcode ' + labelData(item).barcode);
+          quantityWrap.appendChild(quantityInput);
+        }
         const printButton = document.createElement('button');
         printButton.type = 'button';
         printButton.className = 'label-action print-label-button';
@@ -287,7 +306,8 @@
             remove.disabled = false;
           }
         });
-        head.append(label, selectWrap, printButton, remove);
+        if (quantityInput) head.append(label, quantityInput.parentElement, selectWrap, printButton, remove);
+        else head.append(label, selectWrap, printButton, remove);
         card.append(head, createLabelPreview(item, boxIndex));
         container.appendChild(card);
       });
@@ -323,18 +343,8 @@
       updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
       return;
     }
-    // Do not open the print dialog unless this label still exists in the selected Box.
     if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
-
-    let target = null;
-    document.querySelectorAll('.queue-item').forEach(card => {
-      card.classList.remove('print-target', 'print-last');
-      const matches = Number(card.dataset.box) === boxIndex && Number(card.dataset.itemIndex) === itemIndex;
-      if (matches) target = card;
-    });
-    if (!target) return;
-    target.classList.add('print-target', 'print-last');
-    printAfterFontsReady();
+    printQueue(boxIndex, false, itemIndex);
   }
 
   function updatePrintSelectionUI() {
@@ -348,34 +358,73 @@
     });
   }
 
-  function printQueue(boxIndex = null, selectedOnly = false) {
+  function printQueue(boxIndex = null, selectedOnly = false, singleItemIndex = null) {
     if (boxIndex === 1) {
       updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
       return;
     }
-    const cards = document.querySelectorAll('.queue-item');
-    const printableCards = [];
 
+    const cards = [...document.querySelectorAll('.queue-item')];
+    const printableCards = [];
     cards.forEach(card => {
-      const cardBox = Number(card.dataset.box);
-      const item = boxes[cardBox]?.[Number(card.dataset.itemIndex)];
-      const key = item ? cardBox + '::' + itemKey(item) : '';
-      const inRequestedBox = boxIndex === null || cardBox === boxIndex;
-      if (item && inRequestedBox && (!selectedOnly || selectedLabels.has(key))) {
-        printableCards.push(card);
-      }
-      card.classList.remove('print-target');
+      card.classList.remove('print-target', 'print-last');
+      if (card.dataset.printClone === 'true') card.remove();
     });
 
-    // Empty Box / no selected labels: do not invoke the browser print dialog.
+    cards.filter(card => card.isConnected).forEach(card => {
+      const cardBox = Number(card.dataset.box);
+      const itemIndex = Number(card.dataset.itemIndex);
+      const item = boxes[cardBox]?.[itemIndex];
+      const key = item ? cardBox + '::' + itemKey(item) : '';
+      const inRequestedBox = boxIndex === null || cardBox === boxIndex;
+      const isRequestedItem = singleItemIndex === null || itemIndex === singleItemIndex;
+      if (item && inRequestedBox && isRequestedItem && (!selectedOnly || selectedLabels.has(key))) {
+        printableCards.push(card);
+      }
+    });
+
     if (printableCards.length === 0) return;
-    printableCards.forEach(card => { card.classList.add('print-target'); card.classList.remove('print-last'); });
-    printableCards[printableCards.length - 1].classList.add('print-last');
+
+    const printCards = [];
+    for (const card of printableCards) {
+      const cardBox = Number(card.dataset.box);
+      if (cardBox !== 2) {
+        printCards.push(card);
+        continue;
+      }
+
+      const input = card.querySelector('.print-quantity');
+      const rawQuantity = Number(input?.value ?? 1);
+      if (!Number.isInteger(rawQuantity) || rawQuantity < 1 || rawQuantity > 500) {
+        updated.textContent = 'กรุณาระบุจำนวนใบเป็นจำนวนเต็มระหว่าง 1 ถึง 500';
+        input?.focus();
+        return;
+      }
+
+      // Run Number starts at 0001 for each Barcode in each print command.
+      for (let run = 1; run <= rawQuantity; run++) {
+        const copy = card.cloneNode(true);
+        copy.dataset.printClone = 'true';
+        copy.classList.add('print-target');
+        copy.classList.remove('print-last');
+        const runElement = copy.querySelector('.run-number');
+        if (runElement) runElement.textContent = 'RUN: ' + String(run).padStart(4, '0');
+        printCards.push(copy);
+        card.parentElement.appendChild(copy);
+      }
+    }
+
+    // Keep existing single-copy print behavior for the other label categories.
+    printCards.forEach(card => { card.classList.add('print-target'); card.classList.remove('print-last'); });
+    printCards[printCards.length - 1].classList.add('print-last');
     printAfterFontsReady();
   }
 
   window.addEventListener('afterprint', () => {
-    document.querySelectorAll('.queue-item').forEach(card => card.classList.remove('print-target', 'print-last'));
+    document.querySelectorAll('.queue-item').forEach(card => {
+      card.classList.remove('print-target', 'print-last');
+      if (card.dataset.printClone === 'true') card.remove();
+    });
   });
 
   async function managePrintList(payload) {
