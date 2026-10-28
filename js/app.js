@@ -230,6 +230,9 @@
   }
 
   function printSingleLabel(boxIndex, itemIndex) {
+    // Do not open the print dialog unless this label still exists in the selected Box.
+    if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
+
     let found = false;
     document.querySelectorAll('.queue-item').forEach(card => {
       const matches = Number(card.dataset.box) === boxIndex && Number(card.dataset.itemIndex) === itemIndex;
@@ -247,16 +250,23 @@
 
   function printQueue(boxIndex = null, selectedOnly = false) {
     const cards = document.querySelectorAll('.queue-item');
-    let hasItems = false;
+    const printableCards = [];
+
     cards.forEach(card => {
-      const item = boxes[Number(card.dataset.box)]?.[Number(card.dataset.itemIndex)];
-      const key = item ? Number(card.dataset.box) + '::' + itemKey(item) : '';
-      const inRequestedBox = boxIndex === null || Number(card.dataset.box) === boxIndex;
-      const shouldPrint = inRequestedBox && (!selectedOnly || selectedLabels.has(key));
-      card.classList.toggle('print-target', shouldPrint);
-      if (shouldPrint) hasItems = true;
+      const cardBox = Number(card.dataset.box);
+      const item = boxes[cardBox]?.[Number(card.dataset.itemIndex)];
+      const key = item ? cardBox + '::' + itemKey(item) : '';
+      const inRequestedBox = boxIndex === null || cardBox === boxIndex;
+      if (item && inRequestedBox && (!selectedOnly || selectedLabels.has(key))) {
+        printableCards.push(card);
+      }
+      card.classList.remove('print-target');
     });
-    if (hasItems) window.print();
+
+    // Empty Box / no selected labels: do not invoke the browser print dialog.
+    if (printableCards.length === 0) return;
+    printableCards.forEach(card => card.classList.add('print-target'));
+    window.print();
   }
 
   window.addEventListener('afterprint', () => {
