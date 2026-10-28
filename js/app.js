@@ -275,7 +275,9 @@
         const printButton = document.createElement('button');
         printButton.type = 'button';
         printButton.className = 'label-action print-label-button';
-        setButtonIcon(printButton, 'printer', 'พิมพ์');
+        printButton.innerHTML = iconMarkup('printer');
+        printButton.setAttribute('aria-label', 'พิมพ์ฉลาก');
+        printButton.title = 'พิมพ์ฉลาก';
         if (boxIndex === 1) {
           printButton.disabled = true;
           printButton.title = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
@@ -284,7 +286,9 @@
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove-button';
-        setButtonIcon(remove, 'trash', 'ลบ');
+        remove.innerHTML = iconMarkup('trash');
+        remove.setAttribute('aria-label', 'ลบฉลาก');
+        remove.title = 'ลบฉลาก';
         remove.addEventListener('click', async () => {
           const barcode = valueOf(item, ['BarcodeNo', 'Barcode']);
           if (!barcode) {
