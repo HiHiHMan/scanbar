@@ -141,12 +141,10 @@
       const today = new Date();
       date.textContent = [today.getDate(), today.getMonth() + 1, today.getFullYear()]
         .map(part => String(part).padStart(2, '0')).join('/');
-      const quantity = document.createElement('span');
-      quantity.textContent = 'x';
       const runNumber = document.createElement('span');
       runNumber.className = 'run-number';
-      runNumber.textContent = 'RUN: 0001';
-      footer.append(date, quantity, runNumber);
+      runNumber.textContent = '1/1';
+      footer.append(date, runNumber);
       preview.appendChild(footer);
     }
 
@@ -413,7 +411,7 @@
         copy.classList.add('print-target');
         copy.classList.remove('print-last');
         const runElement = copy.querySelector('.run-number');
-        if (runElement) runElement.textContent = 'RUN: ' + String(run).padStart(4, '0');
+        if (runElement) runElement.textContent = run + '/' + quantity;
         printCards.push(copy);
         card.parentElement.appendChild(copy);
       }
