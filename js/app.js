@@ -42,6 +42,14 @@
         const caption = document.createElement('span'); caption.className = 'field-name'; caption.textContent = label;
         line.appendChild(caption); line.appendChild(document.createTextNode(text)); return line;
       }
+      function makeLocationLine(location) {
+        const line = document.createElement('div'); line.className = 'label-line line-1';
+        line.appendChild(document.createTextNode('form '));
+        const locationElement = document.createElement('strong');
+        locationElement.textContent = location;
+        line.appendChild(locationElement);
+        return line;
+      }
       function createCard(row, index) {
         const card = document.createElement('article'); card.className = 'item'; card.dataset.index = String(index);
         const head = document.createElement('div'); head.className = 'item-head';
@@ -53,7 +61,7 @@
         head.append(selectLabel, number);
         const data = labelData(row);
         const preview = document.createElement('div'); preview.className = 'label-preview';
-        preview.appendChild(makeLine('line-1', '', "form " + data.location));
+        preview.appendChild(makeLocationLine(data.location));
         const productLine = document.createElement('div');
         productLine.className = 'label-line line-2';
 
