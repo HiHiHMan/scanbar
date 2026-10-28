@@ -4,11 +4,9 @@
     return { input: document.getElementById('search' + number), button: document.getElementById('searchButton' + number),
       clear: document.getElementById('clearSearch' + number), results: document.getElementById('searchResults' + number), request: 0, data: [] };
   });
-  const printSelected = document.getElementById('printSelected');
-  const printAll = document.getElementById('printAll');
+  const printSelectedButtons = [1, 2, 3].map(number => document.getElementById('printSelected' + number));
   const selectedLabels = new Set();
   const connection = document.getElementById('connection');
-  const selectedCount = document.getElementById('selectedCount');
   const count = document.getElementById('count');
   const updated = document.getElementById('updated');
   const boxes = [[], [], []];
@@ -37,8 +35,7 @@
   }
 
   function decorateStaticButtons() {
-    setButtonIcon(document.getElementById('printSelected'), 'printer', 'พิมพ์ฉลากที่เลือก (0)');
-    setButtonIcon(printAll, 'layers', 'พิมพ์ทั้งหมด');
+    [1, 2, 3].forEach(number => setButtonIcon(document.getElementById('printSelected' + number), 'printer', 'พิมพ์ที่เลือก'));
     [1, 2, 3].forEach(number => {
       setButtonIcon(document.getElementById('printBox' + number), 'printer', 'พิมพ์ Box ' + number);
       setButtonIcon(document.getElementById('clearBox' + number), 'trash', 'ล้าง Box');
@@ -169,7 +166,6 @@
   }
 
   function renderBoxes() {
-    let total = 0;
     boxes.forEach((items, boxIndex) => {
       const number = boxIndex + 1;
       const container = document.getElementById('box' + number);
@@ -183,7 +179,6 @@
       boxCount.textContent = items.length.toLocaleString();
       clearButton.disabled = items.length === 0;
       printButton.disabled = items.length === 0;
-      total += items.length;
       container.replaceChildren();
 
       if (!items.length) {
@@ -237,8 +232,6 @@
         container.appendChild(card);
       });
     });
-    selectedCount.textContent = total.toLocaleString();
-    printAll.disabled = total === 0;
     updatePrintSelectionUI();
     boxTabs.replaceChildren();
     boxes.forEach((items, boxIndex) => {
@@ -269,9 +262,14 @@
   }
 
   function updatePrintSelectionUI() {
-    const selectedCount = selectedLabels.size;
-    printSelected.disabled = selectedCount === 0;
-    setButtonIcon(printSelected, 'printer', 'พิมพ์ฉลากที่เลือก (' + selectedCount + ')');
+    [0, 1, 2].forEach(boxIndex => {
+      const number = boxIndex + 1;
+      const count = boxes[boxIndex].filter(item => selectedLabels.has(boxIndex + '::' + itemKey(item))).length;
+      document.getElementById('selectedCount' + number).textContent = count.toLocaleString();
+      const button = printSelectedButtons[boxIndex];
+      button.disabled = count === 0;
+      setButtonIcon(button, 'printer', 'พิมพ์ที่เลือก');
+    });
   }
 
   function printQueue(boxIndex = null, selectedOnly = false) {
@@ -346,8 +344,7 @@
       updated.textContent = 'ล้างคำค้นหา Box ' + (boxIndex + 1) + ' แล้ว'; state.input.focus();
     });
   });
-  printSelected.addEventListener('click', () => printQueue(null, true));
-  printAll.addEventListener('click', () => printQueue());
+  printSelectedButtons.forEach((button, boxIndex) => button.addEventListener('click', () => printQueue(boxIndex, true)));
   [0, 1, 2].forEach(index => {
     const number = index + 1;
     document.getElementById('clearBox' + number).addEventListener('click', () => {
