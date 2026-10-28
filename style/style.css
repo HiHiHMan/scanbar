@@ -818,3 +818,56 @@
     display: block !important;
   }
 }
+
+
+/* Box switcher: show only the selected box */
+.box-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 16px;
+  padding: 6px;
+  background: #f3f5f9;
+  border: 1px solid #e4e9f2;
+  border-radius: 12px;
+}
+
+.box-tabs .box-tab {
+  flex: 1 1 120px;
+  padding: 11px 16px;
+  background: transparent;
+  color: #526078;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+.box-tabs .box-tab.active {
+  color: #243b9b;
+  background: #fff;
+  border-color: #dce4ff;
+  box-shadow: 0 2px 6px #15264b12;
+}
+
+.boxes-grid {
+  display: block;
+}
+
+.boxes-grid > .queue-section {
+  display: none;
+}
+
+.boxes-grid > .queue-section.active-box {
+  display: block;
+}
+
+@media print {
+  .box-tabs {
+    display: none !important;
+  }
+
+  .boxes-grid > .queue-section {
+    display: contents !important;
+  }
+}
