@@ -30,12 +30,7 @@
           <h2 id="boxesTitle">รายการในแต่ละ Box</h2>
           <div class="muted">แต่ละ Box แยกกัน สามารถเพิ่ม ลบ และพิมพ์รายการได้</div>
         </div>
-        <div class="global-actions">
-          <span class="queue-count">รวม <strong id="selectedCount">0</strong> ฉลาก</span>
-          <button id="printSelected" type="button" disabled>พิมพ์ฉลากที่เลือก (0)</button>
-          <button id="printAll" type="button" class="secondary" disabled>พิมพ์ทั้งหมด</button>
-        </div>
-      </div>
+</div>
       <div id="boxTabs" class="box-tabs" role="tablist" aria-label="เลือก Box"></div>
       <div class="boxes-grid">
         <section class="queue-section" aria-labelledby="box1Title">
@@ -44,7 +39,9 @@
               <h2 id="box1Title">Box 1</h2>
               <div class="muted"><span id="box1Count">0</span> รายการ</div>
             </div>
-            <div >
+            <div class="global-actions">
+              <span class="queue-count">เลือก <strong id="selectedCount1">0</strong></span>
+              <button id="printSelected1" type="button" disabled>พิมพ์ที่เลือก</button>
               <button id="printBox1" type="button" class="secondary" disabled>พิมพ์ Box 1</button>
               <button id="clearBox1" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
@@ -73,7 +70,9 @@
               <h2 id="box2Title">Box 2</h2>
               <div class="muted"><span id="box2Count">0</span> รายการ</div>
             </div>
-            <div >
+            <div class="global-actions">
+              <span class="queue-count">เลือก <strong id="selectedCount2">0</strong></span>
+              <button id="printSelected2" type="button" disabled>พิมพ์ที่เลือก</button>
               <button id="printBox2" type="button" class="secondary" disabled>พิมพ์ Box 2</button>
               <button id="clearBox2" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
@@ -102,7 +101,9 @@
               <h2 id="box3Title">Box 3</h2>
               <div class="muted"><span id="box3Count">0</span> รายการ</div>
             </div>
-            <div >
+            <div class="global-actions">
+              <span class="queue-count">เลือก <strong id="selectedCount3">0</strong></span>
+              <button id="printSelected3" type="button" disabled>พิมพ์ที่เลือก</button>
               <button id="printBox3" type="button" class="secondary" disabled>พิมพ์ Box 3</button>
               <button id="clearBox3" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
