@@ -1,8 +1,9 @@
 (() => {
-  const search = document.getElementById('search');
-  const searchButton = document.getElementById('searchButton');
-  const clearSearch = document.getElementById('clearSearch');
-  const searchResults = document.getElementById('searchResults');
+  const boxSearches = [0, 1, 2].map(index => {
+    const number = index + 1;
+    return { input: document.getElementById('search' + number), button: document.getElementById('searchButton' + number),
+      clear: document.getElementById('clearSearch' + number), results: document.getElementById('searchResults' + number), request: 0, data: [] };
+  });
   const printSelected = document.getElementById('printSelected');
   const printAll = document.getElementById('printAll');
   const selectedLabels = new Set();
@@ -10,11 +11,6 @@
   const selectedCount = document.getElementById('selectedCount');
   const count = document.getElementById('count');
   const updated = document.getElementById('updated');
-  const targetBoxLabel = document.getElementById('targetBoxLabel');
-  const addColumnTitle = document.getElementById('addColumnTitle');
-
-  let searchRequest = 0;
-  let searchResultsData = [];
   const boxes = [[], [], []];
   let activeBox = 0;
   const boxTabs = document.getElementById("boxTabs");
@@ -92,15 +88,16 @@
     return preview;
   }
 
-  function addTableMessage(message, error = false) {
-    searchResults.replaceChildren();
+  function addTableMessage(boxIndex, message, error = false) {
+    const results = boxSearches[boxIndex].results;
+    results.replaceChildren();
     const row = document.createElement('tr');
     const cell = document.createElement('td');
     cell.colSpan = 6;
     cell.className = 'table-message' + (error ? ' error' : '');
     cell.textContent = message;
     row.appendChild(cell);
-    searchResults.appendChild(row);
+    results.appendChild(row);
   }
 
   function itemKey(row) {
@@ -112,38 +109,29 @@
     if (boxes[boxIndex].some(item => itemKey(item) === itemKey(row))) return;
     boxes[boxIndex].push(row);
     renderBoxes();
-    renderSearchResults();
+    renderSearchResults(boxIndex);
   }
 
-  function renderSearchResults() {
-    searchResults.replaceChildren();
-    if (!searchResultsData.length) {
-      addTableMessage(search.value.trim() ? 'ไม่พบ Product ID นี้' : 'กรอก Product ID เพื่อเริ่มค้นหา');
+  function renderSearchResults(boxIndex) {
+    const state = boxSearches[boxIndex];
+    state.results.replaceChildren();
+    if (!state.data.length) {
+      addTableMessage(boxIndex, state.input.value.trim() ? 'ไม่พบ Product ID นี้' : 'กรอก Product ID เพื่อเริ่มค้นหา');
       return;
     }
-
-    searchResultsData.forEach(row => {
+    state.data.forEach(row => {
       const data = labelData(row);
       const tr = document.createElement('tr');
-      [data.location, data.productID, [data.size1, data.size2, data.size3].filter(Boolean).join(' × ') || '—', data.description, data.barcode || '—']
-        .forEach(value => {
-          const td = document.createElement('td');
-          td.textContent = value;
-          tr.appendChild(td);
-        });
-
-      const actionCell = document.createElement('td');
-      actionCell.className = 'add-actions';
-      const exists = boxes[activeBox].some(item => itemKey(item) === itemKey(row));
-      const button = document.createElement('button');
-      button.type = 'button';
+      [data.location, data.productID, [data.size1, data.size2, data.size3].filter(Boolean).join(' × ') || '—', data.description, data.barcode || '—'].forEach(value => {
+        const td = document.createElement('td'); td.textContent = value; tr.appendChild(td);
+      });
+      const actionCell = document.createElement('td'); actionCell.className = 'add-actions';
+      const exists = boxes[boxIndex].some(item => itemKey(item) === itemKey(row));
+      const button = document.createElement('button'); button.type = 'button';
       button.className = exists ? 'secondary mini-button' : 'mini-button';
-      button.textContent = exists ? 'เพิ่มแล้ว' : '+ เพิ่มลง Box ' + (activeBox + 1);
-      button.disabled = exists;
-      button.addEventListener('click', () => addToBox(row, activeBox));
-      actionCell.appendChild(button);
-      tr.appendChild(actionCell);
-      searchResults.appendChild(tr);
+      button.textContent = exists ? 'เพิ่มแล้ว' : '+ เพิ่มลง Box ' + (boxIndex + 1); button.disabled = exists;
+      button.addEventListener('click', () => addToBox(row, boxIndex));
+      actionCell.appendChild(button); tr.appendChild(actionCell); state.results.appendChild(tr);
     });
   }
 
@@ -218,7 +206,7 @@
           selectedLabels.delete(boxIndex + '::' + itemKey(item));
           boxes[boxIndex].splice(itemIndex, 1);
           renderBoxes();
-          renderSearchResults();
+          renderSearchResults(boxIndex);
         });
         head.append(label, selectWrap, previewButton, printButton, remove);
         card.append(head, createLabelPreview(item));
@@ -236,7 +224,7 @@
       tab.setAttribute('role', 'tab');
       tab.setAttribute('aria-selected', String(boxIndex === activeBox));
       tab.textContent = 'Box ' + (boxIndex + 1) + ' (' + items.length + ')';
-      tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); renderSearchResults(); targetBoxLabel.textContent = 'Box ' + (activeBox + 1); addColumnTitle.textContent = 'เพิ่มลง Box ' + (activeBox + 1); });
+      tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); });
       boxTabs.appendChild(tab);
     });
   }
@@ -289,56 +277,38 @@
     }
   }
 
-  async function searchByProductID() {
-    const requestId = ++searchRequest;
-    const productID = search.value.trim();
+  async function searchByProductID(boxIndex) {
+    const state = boxSearches[boxIndex], requestId = ++state.request, productID = state.input.value.trim();
     if (!productID) {
-      searchResultsData = [];
-      renderSearchResults();
-      count.textContent = 'พร้อมค้นหา';
-      updated.textContent = 'กรอก Product ID เพื่อค้นหา';
-      return;
+      state.data = []; renderSearchResults(boxIndex); count.textContent = 'พร้อมค้นหา'; updated.textContent = 'กรอก Product ID เพื่อค้นหา'; return;
     }
-
-    addTableMessage('กำลังค้นหา Product ID…');
-    searchButton.disabled = true;
+    addTableMessage(boxIndex, 'กำลังค้นหา Product ID…'); state.button.disabled = true;
     try {
       const response = await fetch('/api/labels/search?productID=' + encodeURIComponent(productID));
       const payload = await response.json();
-      if (requestId !== searchRequest) return;
-      if (response.status === 404) {
-        searchResultsData = [];
-      } else if (!response.ok) {
-        throw new Error(payload.error || 'ค้นหาข้อมูลไม่สำเร็จ');
-      } else {
-        searchResultsData = Array.isArray(payload.data) ? payload.data : [];
-      }
-      renderSearchResults();
-      count.textContent = 'ผลการค้นหา ' + searchResultsData.length.toLocaleString() + ' รายการ';
+      if (requestId !== state.request) return;
+      if (response.status === 404) state.data = [];
+      else if (!response.ok) throw new Error(payload.error || 'ค้นหาข้อมูลไม่สำเร็จ');
+      else state.data = Array.isArray(payload.data) ? payload.data : [];
+      renderSearchResults(boxIndex);
+      count.textContent = 'Box ' + (boxIndex + 1) + ': ผลการค้นหา ' + state.data.length.toLocaleString() + ' รายการ';
       updated.textContent = 'ค้นหา Product ID: ' + productID + ' · ' + new Date().toLocaleString('th-TH');
     } catch (error) {
-      if (requestId !== searchRequest) return;
-      addTableMessage(error.message, true);
-    } finally {
-      if (requestId === searchRequest) searchButton.disabled = false;
-    }
+      if (requestId !== state.request) return;
+      addTableMessage(boxIndex, error.message, true);
+    } finally { if (requestId === state.request) state.button.disabled = false; }
   }
 
-  search.addEventListener('keydown', event => {
-    if (event.key !== 'Enter') return;
-    event.preventDefault();
-    searchByProductID();
-  });
-  searchButton.addEventListener('click', searchByProductID);
-  clearSearch.addEventListener('click', () => {
-    search.value = '';
-    searchResultsData = [];
-    searchRequest++;
-    searchButton.disabled = false;
-    renderSearchResults();
-    count.textContent = 'พร้อมค้นหา';
-    updated.textContent = 'ล้างคำค้นหาแล้ว';
-    search.focus();
+  boxSearches.forEach((state, boxIndex) => {
+    state.input.addEventListener('keydown', event => {
+      if (event.key !== 'Enter') return; event.preventDefault(); searchByProductID(boxIndex);
+    });
+    state.button.addEventListener('click', () => searchByProductID(boxIndex));
+    state.clear.addEventListener('click', () => {
+      state.input.value = ''; state.data = []; state.request++; state.button.disabled = false;
+      renderSearchResults(boxIndex); count.textContent = 'พร้อมค้นหา';
+      updated.textContent = 'ล้างคำค้นหา Box ' + (boxIndex + 1) + ' แล้ว'; state.input.focus();
+    });
   });
   printSelected.addEventListener('click', () => printQueue(null, true));
   printAll.addEventListener('click', () => printQueue());
@@ -348,12 +318,12 @@
       boxes[index].forEach(item => selectedLabels.delete(index + '::' + itemKey(item)));
       boxes[index] = [];
       renderBoxes();
-      renderSearchResults();
+      renderSearchResults(index);
     });
     document.getElementById('printBox' + number).addEventListener('click', () => printQueue(index));
   });
 
   renderBoxes();
-  renderSearchResults();
+  boxSearches.forEach((_, index) => renderSearchResults(index));
   checkConnection();
 })();
