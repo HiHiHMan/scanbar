@@ -184,15 +184,6 @@
           updatePrintSelectionUI();
         });
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
-        const previewButton = document.createElement('button');
-        previewButton.type = 'button';
-        previewButton.className = 'secondary label-action';
-        previewButton.textContent = 'Preview';
-        previewButton.addEventListener('click', () => {
-          card.classList.add('label-preview-focus');
-          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          window.setTimeout(() => card.classList.remove('label-preview-focus'), 1800);
-        });
         const printButton = document.createElement('button');
         printButton.type = 'button';
         printButton.className = 'label-action';
@@ -208,7 +199,7 @@
           renderBoxes();
           renderSearchResults(boxIndex);
         });
-        head.append(label, selectWrap, previewButton, printButton, remove);
+        head.append(label, selectWrap, printButton, remove);
         card.append(head, createLabelPreview(item));
         container.appendChild(card);
       });
