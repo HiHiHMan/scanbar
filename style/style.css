@@ -1,5 +1,5 @@
     @font-face {
-      font-family: "3of9";
+      font-family: "BarcodeFont";
       src: url("../font/3of9.TTF") format("truetype");
       font-weight: normal;
       font-style: normal;
@@ -260,7 +260,7 @@
     }
 
     .barcode-bars {
-      font-family: "3of9", sans-serif;
+      font-family: "BarcodeFont", sans-serif;
       font-size: 55px;
       font-weight: normal;
       line-height: 1.15;
@@ -926,7 +926,7 @@
   }
 
   .box-items .queue-item.print-target .barcode-bars {
-    font-family: "3of9", sans-serif !important;
+    font-family: "BarcodeFont", sans-serif !important;
     font-size: 55px !important;
     display: block !important;
     visibility: visible !important;
@@ -1367,7 +1367,7 @@ button.secondary {
   .box-items .queue-item.print-target .barcode-bars {
     display: block !important;
     visibility: visible !important;
-    font-family: "3of9", sans-serif !important;
+    font-family: "BarcodeFont", sans-serif !important;
     font-size: 55px !important;
     font-weight: normal !important;
     color: #000 !important;
