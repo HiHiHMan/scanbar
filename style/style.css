@@ -384,8 +384,8 @@
         padding: 0;
         width: 76.2mm;
         height: 50.8mm;
-        break-after: page;
-        page-break-after: always;
+        break-after: auto;
+        page-break-after: auto;
         overflow: hidden
       }
 
@@ -915,6 +915,24 @@
 
 /* Final print cleanup: print labels only, never empty Box placeholders or card borders */
 @media print {
+  .box-items .queue-item.print-target {
+    width: 76.2mm !important;
+    height: 50.8mm !important;
+    min-height: 50.8mm !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: auto !important;
+    page-break-after: auto !important;
+  }
+
+  .box-items .queue-item.print-target .barcode-bars {
+    font-family: "Barcode", sans-serif !important;
+    font-size: 55px !important;
+    display: block !important;
+    visibility: visible !important;
+    color: #000 !important;
+  }
+
   .box-items .empty {
     display: none !important;
   }
