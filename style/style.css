@@ -1081,3 +1081,30 @@ button:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }
 body {
   background: #fff;
 }
+
+
+/* Consistent inline line icons */
+.ui-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: inline-block;
+  vertical-align: middle;
+}
+button:has(.ui-icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.box-tabs .box-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.add-actions .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+@media (max-width: 600px) {
+  button:has(.ui-icon) { gap: 5px; }
+  .ui-icon { width: 15px; height: 15px; flex-basis: 15px; }
+}
