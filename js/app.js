@@ -331,7 +331,7 @@
   async function printAfterFontsReady() {
     try {
       if (document.fonts && document.fonts.load) {
-        await document.fonts.load('55px "3of9"');
+        await document.fonts.load('55px "BarcodeFont"');
         await document.fonts.ready;
       }
     } catch (error) {
