@@ -12,6 +12,7 @@
   const boxes = [[], [], []];
   let activeBox = 0;
   const boxTabs = document.getElementById("boxTabs");
+  const boxNames = ["Label Repack", "Label ประตูรับ", "Label หน้าโหลด"];
 
   const iconPaths = {
     search: '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>',
@@ -37,7 +38,7 @@
   function decorateStaticButtons() {
     [1, 2, 3].forEach(number => setButtonIcon(document.getElementById('printSelected' + number), 'printer', 'พิมพ์ที่เลือก'));
     [1, 2, 3].forEach(number => {
-      setButtonIcon(document.getElementById('printBox' + number), 'layers', 'พิมพ์ทั้งหมดใน Box ' + number);
+      setButtonIcon(document.getElementById('printBox' + number), 'layers', 'พิมพ์ทั้งหมด');
       setButtonIcon(document.getElementById('clearBox' + number), 'trash', 'ล้าง Box');
       setButtonIcon(document.getElementById('searchButton' + number), 'search', 'ค้นหา');
       setButtonIcon(document.getElementById('clearSearch' + number), 'x', 'ล้าง');
@@ -240,7 +241,7 @@
       tab.className = 'box-tab' + (boxIndex === activeBox ? ' active' : '');
       tab.setAttribute('role', 'tab');
       tab.setAttribute('aria-selected', String(boxIndex === activeBox));
-      tab.innerHTML = iconMarkup('box') + '<span>Box ' + (boxIndex + 1) + ' (' + items.length + ')</span>';
+      tab.innerHTML = iconMarkup('box') + '<span>' + boxNames[boxIndex] + ' (' + items.length + ')</span>';
       tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); });
       boxTabs.appendChild(tab);
     });
