@@ -953,7 +953,7 @@ body { background: #f4f7fc; }
   background: linear-gradient(115deg, #14264b 0%, #1c3d76 100%);
   box-shadow: 0 5px 22px #15264b1c;
 }
-.wrap { max-width: 1600px; }
+.wrap { max-width: 1400px; }
 .intro {
   background: #fff;
   border: 1px solid #dfe7f4;
