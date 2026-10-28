@@ -62,6 +62,7 @@ func main() {
 	mux.HandleFunc("GET /api/labels/search", a.searchLabels)
 	mux.Handle("GET /style/", http.StripPrefix("/style/", http.FileServer(http.Dir("style"))))
 	mux.Handle("GET /js/", http.StripPrefix("/js/", http.FileServer(http.Dir("js"))))
+	mux.Handle("GET /font/", http.StripPrefix("/font/", http.FileServer(http.Dir("font"))))
 	mux.HandleFunc("GET /", serveIndex)
 
 	server := &http.Server{
