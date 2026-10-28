@@ -171,7 +171,7 @@
       const exists = boxes[boxIndex].some(item => itemKey(item) === itemKey(row));
       const button = document.createElement('button'); button.type = 'button';
       button.className = exists ? 'secondary mini-button added-button' : 'mini-button add-button';
-      setButtonIcon(button, exists ? 'check' : 'plus', exists ? 'เพิ่มแล้ว' : 'เพิ่มลง Box ' + (boxIndex + 1)); button.disabled = exists;
+      setButtonIcon(button, exists ? 'check' : 'plus', exists ? 'เพิ่มแล้ว' : 'เพิ่มลง ' + boxNames[boxIndex]); button.disabled = exists;
       button.addEventListener('click', () => addToBox(row, boxIndex));
       actionCell.appendChild(button); tr.appendChild(actionCell); state.results.appendChild(tr);
     });
