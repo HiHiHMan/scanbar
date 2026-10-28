@@ -19,7 +19,7 @@
     <section class="intro">
       <div>
         <h1>Label Print Studio</h1>
-        <div class="muted">ค้นหาด้วย Product ID แล้วเพิ่มฉลากที่ต้องการลงในรายการพิมพ์</div>
+        <div class="muted">ค้นหา Product ID แล้วเพิ่มลงใน Box 1, Box 2 หรือ Box 3</div>
       </div>
     </section>
 
@@ -30,27 +30,82 @@
         <button id="searchButton" type="button">ค้นหา</button>
         <button class="secondary" id="clearSearch" type="button">ล้าง</button>
       </div>
-      <p class="search-hint">ระบบจะค้นหาเมื่อกด Enter หรือปุ่มค้นหาเท่านั้น</p>
-      <div id="searchResults" class="grid results-grid">
-        <div class="empty">กรอก Product ID เพื่อเริ่มค้นหา</div>
+      <p class="search-hint">ผลการค้นหาจะแสดงเป็นตาราง สามารถเลือกเพิ่มแต่ละรายการลง Box ที่ต้องการ</p>
+      <div class="table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>Location</th>
+              <th>Product ID</th>
+              <th>Size</th>
+              <th>Description</th>
+              <th>Barcode</th>
+              <th>เพิ่มลง Box</th>
+            </tr>
+          </thead>
+          <tbody id="searchResults">
+            <tr><td colspan="6" class="table-message">กรอก Product ID เพื่อเริ่มค้นหา</td></tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <section class="queue-section" aria-labelledby="queueTitle">
+    <section class="boxes-section" aria-labelledby="boxesTitle">
       <div class="section-heading">
         <div>
-          <h2 id="queueTitle">รายการที่เตรียมพิมพ์</h2>
-          <div class="muted">เพิ่มจากผลการค้นหา และลบรายการออกได้ก่อนพิมพ์</div>
+          <h2 id="boxesTitle">รายการในแต่ละ Box</h2>
+          <div class="muted">แต่ละ Box แยกกัน สามารถเพิ่ม ลบ และพิมพ์รายการได้</div>
         </div>
         <div class="queue-actions">
-          <span class="queue-count"><strong id="selectedCount">0</strong> รายการ</span>
-          <button id="clearQueue" type="button" class="secondary">ล้างรายการ</button>
+          <span class="queue-count">รวม <strong id="selectedCount">0</strong> รายการ</span>
           <button id="printSelected" type="button" disabled>พิมพ์ทั้งหมด</button>
         </div>
       </div>
-      <section id="selectedLabels" class="grid selected-grid">
-        <div class="empty">ยังไม่มีรายการในคิวพิมพ์</div>
-      </section>
+      <div class="boxes-grid">
+        <section class="queue-section" aria-labelledby="box1Title">
+          <div class="section-heading box-heading">
+            <div>
+              <h2 id="box1Title">Box 1</h2>
+              <div class="muted"><span id="box1Count">0</span> รายการ</div>
+            </div>
+            <div class="queue-actions">
+              <button id="printBox1" type="button" class="secondary" disabled>พิมพ์ Box 1</button>
+              <button id="clearBox1" type="button" class="secondary" disabled>ล้าง Box</button>
+            </div>
+          </div>
+          <div id="box1" class="box-items">
+            <div class="empty">ยังไม่มีรายการ</div>
+          </div>
+        </section><section class="queue-section" aria-labelledby="box2Title">
+          <div class="section-heading box-heading">
+            <div>
+              <h2 id="box2Title">Box 2</h2>
+              <div class="muted"><span id="box2Count">0</span> รายการ</div>
+            </div>
+            <div class="queue-actions">
+              <button id="printBox2" type="button" class="secondary" disabled>พิมพ์ Box 2</button>
+              <button id="clearBox2" type="button" class="secondary" disabled>ล้าง Box</button>
+            </div>
+          </div>
+          <div id="box2" class="box-items">
+            <div class="empty">ยังไม่มีรายการ</div>
+          </div>
+        </section><section class="queue-section" aria-labelledby="box3Title">
+          <div class="section-heading box-heading">
+            <div>
+              <h2 id="box3Title">Box 3</h2>
+              <div class="muted"><span id="box3Count">0</span> รายการ</div>
+            </div>
+            <div class="queue-actions">
+              <button id="printBox3" type="button" class="secondary" disabled>พิมพ์ Box 3</button>
+              <button id="clearBox3" type="button" class="secondary" disabled>ล้าง Box</button>
+            </div>
+          </div>
+          <div id="box3" class="box-items">
+            <div class="empty">ยังไม่มีรายการ</div>
+          </div>
+        </section>
+      </div>
     </section>
 
     <div class="foot"><span id="count">พร้อมค้นหา</span><span id="updated">ยังไม่ได้ค้นหา</span></div>
