@@ -917,10 +917,10 @@
   aspect-ratio: 3 / 2;
   min-height: 0;
   padding: 3.5% 4%;
-  border: 1px solid #d5d9e0;
-  border-radius: 2px;
+  border: 0;
+  border-radius: 0;
   background: #fff;
-  box-shadow: 0 2px 7px #00000012;
+  box-shadow: none;
   gap: 2px;
 }
 
