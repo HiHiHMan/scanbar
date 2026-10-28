@@ -263,12 +263,13 @@
 
     .barcode-bars {
       font-family: "3of9", sans-serif;
-      font-size: 36px;
+      font-size: 30px;
       font-weight: normal;
       line-height: 1.15;
-      letter-spacing: 1.2px;
+      letter-spacing: .5px;
       white-space: nowrap;
-      transform: scaleY(1.5);
+      max-width: 100%;
+      transform: scale(.8, 1.5);
       transform-origin: center center
     }
 
@@ -445,7 +446,7 @@
       }
 
       .barcode-bars {
-        font-size: 36px
+        font-size: 30px
       }
 
       .barcode-number {
