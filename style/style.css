@@ -215,7 +215,7 @@
     }
 
     .line-1 {
-      font-size: 18px;
+      font-size: 24px;
       font-weight: 600;
     }
 
@@ -225,7 +225,7 @@
       align-items: center;
       gap: 6px;
       width: 100%;
-      font-size: 20px;
+      font-size: 24px;
       font-weight: 600;
       white-space: normal
     }
@@ -418,11 +418,11 @@
       }
 
       .line-1 {
-        font-size: 18px;
+        font-size: 24px;
       }
 
       .line-2 {
-        font-size: 20px;
+        font-size: 24px;
         gap: 2mm
       }
 
