@@ -1375,3 +1375,54 @@ button.secondary {
     print-color-adjust: exact;
   }
 }
+
+
+/* Category-specific label formats */
+.box-items .label-preview--unavailable {
+  aspect-ratio: 3 / 2;
+  min-height: 150px;
+  justify-content: center;
+  padding: 16px;
+  color: #8b3e2d;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.box-items .label-preview--loading {
+  gap: 2px;
+}
+
+.box-items .label-preview--loading .line-4 {
+  margin-top: auto;
+}
+
+.box-items .label-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 2px;
+  padding: 0 4px;
+  color: #000;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+@media print {
+  .box-items .queue-item.print-target .label-preview--unavailable {
+    display: none !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview--loading .label-footer {
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding: 0 1mm;
+    font-size: 12px;
+    line-height: 1;
+  }
+}
