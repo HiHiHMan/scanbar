@@ -37,7 +37,7 @@
   function decorateStaticButtons() {
     [1, 2, 3].forEach(number => setButtonIcon(document.getElementById('printSelected' + number), 'printer', 'พิมพ์ที่เลือก'));
     [1, 2, 3].forEach(number => {
-      setButtonIcon(document.getElementById('printBox' + number), 'printer', 'พิมพ์ Box ' + number);
+      setButtonIcon(document.getElementById('printBox' + number), 'layers', 'พิมพ์ทั้งหมดใน Box ' + number);
       setButtonIcon(document.getElementById('clearBox' + number), 'trash', 'ล้าง Box');
       setButtonIcon(document.getElementById('searchButton' + number), 'search', 'ค้นหา');
       setButtonIcon(document.getElementById('clearSearch' + number), 'x', 'ล้าง');
