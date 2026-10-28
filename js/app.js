@@ -10,6 +10,8 @@
   const selectedCount = document.getElementById('selectedCount');
   const count = document.getElementById('count');
   const updated = document.getElementById('updated');
+  const targetBoxLabel = document.getElementById('targetBoxLabel');
+  const addColumnTitle = document.getElementById('addColumnTitle');
 
   let searchRequest = 0;
   let searchResultsData = [];
@@ -132,16 +134,14 @@
 
       const actionCell = document.createElement('td');
       actionCell.className = 'add-actions';
-      boxes.forEach((box, boxIndex) => {
-        const button = document.createElement('button');
-        const exists = box.some(item => itemKey(item) === itemKey(row));
-        button.type = 'button';
-        button.className = exists ? 'secondary mini-button' : 'mini-button';
-        button.textContent = exists ? 'เพิ่มแล้ว' : 'Box ' + (boxIndex + 1) + ' +';
-        button.disabled = exists;
-        button.addEventListener('click', () => addToBox(row, boxIndex));
-        actionCell.appendChild(button);
-      });
+      const exists = boxes[activeBox].some(item => itemKey(item) === itemKey(row));
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = exists ? 'secondary mini-button' : 'mini-button';
+      button.textContent = exists ? 'เพิ่มแล้ว' : '+ เพิ่มลง Box ' + (activeBox + 1);
+      button.disabled = exists;
+      button.addEventListener('click', () => addToBox(row, activeBox));
+      actionCell.appendChild(button);
       tr.appendChild(actionCell);
       searchResults.appendChild(tr);
     });
@@ -222,7 +222,7 @@
       tab.setAttribute('role', 'tab');
       tab.setAttribute('aria-selected', String(boxIndex === activeBox));
       tab.textContent = 'Box ' + (boxIndex + 1) + ' (' + items.length + ')';
-      tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); });
+      tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); renderSearchResults(); targetBoxLabel.textContent = 'Box ' + (activeBox + 1); addColumnTitle.textContent = 'เพิ่มลง Box ' + (activeBox + 1); });
       boxTabs.appendChild(tab);
     });
   }
