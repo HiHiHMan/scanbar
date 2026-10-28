@@ -90,10 +90,19 @@
     return line;
   }
 
-  function createLabelPreview(row) {
-    const data = labelData(row);
+  function createLabelPreview(row, boxIndex) {
     const preview = document.createElement('div');
     preview.className = 'label-preview';
+
+    if (boxIndex === 1) {
+      preview.classList.add('label-preview--unavailable');
+      preview.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
+      return preview;
+    }
+
+    const data = labelData(row);
+    if (boxIndex === 2) preview.classList.add('label-preview--loading');
+
     preview.appendChild(makeLocationLine(data.location));
 
     const productLine = document.createElement('div');
@@ -116,6 +125,18 @@
     barcodeBars.textContent = data.barcode;
     barcodeLine.appendChild(barcodeBars);
     preview.appendChild(barcodeLine);
+
+    if (boxIndex === 2) {
+      const footer = document.createElement('div');
+      footer.className = 'label-footer';
+      const date = document.createElement('span');
+      date.textContent = 'dd/mm/yyyy';
+      const quantity = document.createElement('span');
+      quantity.textContent = 'x';
+      footer.append(date, quantity);
+      preview.appendChild(footer);
+    }
+
     return preview;
   }
 
@@ -228,6 +249,10 @@
         printButton.type = 'button';
         printButton.className = 'label-action print-label-button';
         setButtonIcon(printButton, 'printer', 'พิมพ์');
+        if (boxIndex === 1) {
+          printButton.disabled = true;
+          printButton.title = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
+        }
         printButton.addEventListener('click', () => printSingleLabel(boxIndex, itemIndex));
         const remove = document.createElement('button');
         remove.type = 'button';
@@ -253,7 +278,7 @@
           }
         });
         head.append(label, selectWrap, printButton, remove);
-        card.append(head, createLabelPreview(item));
+        card.append(head, createLabelPreview(item, boxIndex));
         container.appendChild(card);
       });
     });
@@ -284,6 +309,10 @@
   }
 
   function printSingleLabel(boxIndex, itemIndex) {
+    if (boxIndex === 1) {
+      updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
+      return;
+    }
     // Do not open the print dialog unless this label still exists in the selected Box.
     if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
 
@@ -310,6 +339,10 @@
   }
 
   function printQueue(boxIndex = null, selectedOnly = false) {
+    if (boxIndex === 1) {
+      updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
+      return;
+    }
     const cards = document.querySelectorAll('.queue-item');
     const printableCards = [];
 
