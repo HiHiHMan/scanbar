@@ -1,6 +1,6 @@
     @font-face {
       font-family: "Barcode";
-      src: url("../font/EAN13.ttf") format("truetype");
+      src: url("../font/Barcode.TTF") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
@@ -261,7 +261,7 @@
 
     .barcode-bars {
       font-family: "Barcode", sans-serif;
-      font-size: 50px;
+      font-size: 55px;
       font-weight: normal;
       line-height: 1.15;
       letter-spacing: .5px;
@@ -434,7 +434,7 @@
       }
 
       .barcode-bars {
-        font-size: 50px
+        font-size: 55px
       }
 
       .field-name {
