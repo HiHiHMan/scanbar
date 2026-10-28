@@ -227,7 +227,7 @@
       gap: 6px;
       width: 100%;
       font-size: 20px;
-      font-weight: 800;
+      font-weight: 600;
       margin-bottom: 5px;
       white-space: normal
     }
@@ -237,7 +237,7 @@
       min-width: 0;
       max-width: 100%;
       font-size: inherit;
-      font-weight: 800;
+      font-weight: 600;
       overflow-wrap: anywhere
     }
 
