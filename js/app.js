@@ -54,9 +54,21 @@
         const data = labelData(row);
         const preview = document.createElement('div'); preview.className = 'label-preview';
         preview.appendChild(makeLine('line-1', '', "FORM " + data.location));
-        const dimensions = [data.size1, data.size2, data.size3].filter(v => v && v !== '—');
-        const sizeText = dimensions.length ? dimensions.join(' x ') : '—';
-        preview.appendChild(makeLine('line-2', '', data.productID + '   ' + sizeText));
+        const productLine = document.createElement('div');
+        productLine.className = 'label-line line-2';
+
+        const productElement = document.createElement('span');
+        productElement.className = 'productID';
+        productElement.textContent = data.productID === '—' ? '-' : data.productID;
+
+        const sizeElement = document.createElement('span');
+        sizeElement.className = 'psize';
+        sizeElement.textContent = [data.size1, data.size2, data.size3]
+          .map(size => size && size !== '—' ? size : '-')
+          .join(' X ');
+
+        productLine.append(productElement, sizeElement);
+        preview.appendChild(productLine);
         preview.appendChild(makeLine('line-3', '', data.description));
         preview.appendChild(makeLine('line-4', '', data.barcode));
         const actions = document.createElement('div'); actions.className = 'item-actions';
