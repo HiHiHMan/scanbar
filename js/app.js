@@ -72,7 +72,7 @@
         const sizeElement = document.createElement('span');
         sizeElement.className = 'psize';
         sizeElement.textContent = [data.size1, data.size2, data.size3]
-          .map(size => size && size !== '—' ? size : '-')
+          .map(size => size && size !== '—' ? size : '9')
           .join(' X ');
 
         productLine.append(productElement, sizeElement);
