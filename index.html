@@ -23,33 +23,6 @@
       </div>
     </section>
 
-    <section class="search-panel" aria-labelledby="searchTitle">
-      <label id="searchTitle" for="search">ค้นหา Product ID</label>
-      <div class="search-row">
-        <input id="search" type="search" placeholder="กรอก Product ID แล้วกด Enter" aria-label="ค้นหา Product ID">
-        <button id="searchButton" type="button">ค้นหา</button>
-        <button class="secondary" id="clearSearch" type="button">ล้าง</button>
-      </div>
-      <p class="search-hint"><span>รายการที่ค้นพบจะเพิ่มลง </span><strong id="targetBoxLabel">Box 1</strong><span> ที่เลือกอยู่ด้านล่าง</span></p>
-      <div class="table-wrap">
-        <table class="results-table">
-          <thead>
-            <tr>
-              <th>Location</th>
-              <th>Product ID</th>
-              <th>Size</th>
-              <th>Description</th>
-              <th>Barcode</th>
-              <th id="addColumnTitle">เพิ่มลง Box 1</th>
-            </tr>
-          </thead>
-          <tbody id="searchResults">
-            <tr><td colspan="6" class="table-message">กรอก Product ID เพื่อเริ่มค้นหา</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
     <section class="boxes-section" aria-labelledby="boxesTitle">
       <div class="section-heading">
         <div>
@@ -75,6 +48,21 @@
               <button id="clearBox1" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
           </div>
+          
+          <section class="search-panel box-search-panel" aria-labelledby="searchTitle1">
+            <label id="searchTitle1" for="search1">ค้นหา Product ID สำหรับ Box 1</label>
+            <div class="search-row">
+              <input id="search1" type="search" placeholder="กรอก Product ID แล้วกด Enter" aria-label="ค้นหา Product ID สำหรับ Box 1">
+              <button id="searchButton1" type="button">ค้นหา</button>
+              <button class="secondary" id="clearSearch1" type="button">ล้าง</button>
+            </div>
+            <p class="search-hint">ผลการค้นหานี้จะเพิ่มลง Box 1 เท่านั้น</p>
+            <div class="table-wrap"><table class="results-table">
+              <thead><tr><th>Location</th><th>Product ID</th><th>Size</th><th>Description</th><th>Barcode</th><th>เพิ่มลง Box 1</th></tr></thead>
+              <tbody id="searchResults1"><tr><td colspan="6" class="table-message">กรอก Product ID เพื่อเริ่มค้นหา</td></tr></tbody>
+            </table></div>
+          </section>
+
           <div id="box1" class="box-items">
             <div class="empty">ยังไม่มีรายการ</div>
           </div>
@@ -89,6 +77,21 @@
               <button id="clearBox2" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
           </div>
+          
+          <section class="search-panel box-search-panel" aria-labelledby="searchTitle2">
+            <label id="searchTitle2" for="search2">ค้นหา Product ID สำหรับ Box 2</label>
+            <div class="search-row">
+              <input id="search2" type="search" placeholder="กรอก Product ID แล้วกด Enter" aria-label="ค้นหา Product ID สำหรับ Box 2">
+              <button id="searchButton2" type="button">ค้นหา</button>
+              <button class="secondary" id="clearSearch2" type="button">ล้าง</button>
+            </div>
+            <p class="search-hint">ผลการค้นหานี้จะเพิ่มลง Box 2 เท่านั้น</p>
+            <div class="table-wrap"><table class="results-table">
+              <thead><tr><th>Location</th><th>Product ID</th><th>Size</th><th>Description</th><th>Barcode</th><th>เพิ่มลง Box 2</th></tr></thead>
+              <tbody id="searchResults2"><tr><td colspan="6" class="table-message">กรอก Product ID เพื่อเริ่มค้นหา</td></tr></tbody>
+            </table></div>
+          </section>
+
           <div id="box2" class="box-items">
             <div class="empty">ยังไม่มีรายการ</div>
           </div>
@@ -103,6 +106,21 @@
               <button id="clearBox3" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
           </div>
+          
+          <section class="search-panel box-search-panel" aria-labelledby="searchTitle3">
+            <label id="searchTitle3" for="search3">ค้นหา Product ID สำหรับ Box 3</label>
+            <div class="search-row">
+              <input id="search3" type="search" placeholder="กรอก Product ID แล้วกด Enter" aria-label="ค้นหา Product ID สำหรับ Box 3">
+              <button id="searchButton3" type="button">ค้นหา</button>
+              <button class="secondary" id="clearSearch3" type="button">ล้าง</button>
+            </div>
+            <p class="search-hint">ผลการค้นหานี้จะเพิ่มลง Box 3 เท่านั้น</p>
+            <div class="table-wrap"><table class="results-table">
+              <thead><tr><th>Location</th><th>Product ID</th><th>Size</th><th>Description</th><th>Barcode</th><th>เพิ่มลง Box 3</th></tr></thead>
+              <tbody id="searchResults3"><tr><td colspan="6" class="table-message">กรอก Product ID เพื่อเริ่มค้นหา</td></tr></tbody>
+            </table></div>
+          </section>
+
           <div id="box3" class="box-items">
             <div class="empty">ยังไม่มีรายการ</div>
           </div>
