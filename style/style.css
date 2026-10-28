@@ -1479,3 +1479,20 @@ button.secondary {
     margin-bottom: 2mm !important;
   }
 }
+
+/* Keep icon-only remove and print buttons identical in size */
+.box-items .item-head .remove-button,
+.box-items .item-head .print-label-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  width: 34px;
+  min-width: 34px;
+  max-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  line-height: 1;
+}
