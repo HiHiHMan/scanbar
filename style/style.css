@@ -871,3 +871,71 @@
     display: contents !important;
   }
 }
+
+
+/* Realistic label preview and per-label print selection */
+.box-items {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr));
+  align-items: start;
+  gap: 18px;
+}
+
+.box-items .queue-item {
+  padding: 12px;
+  border: 1px solid #d8deea;
+  border-radius: 12px;
+  background: #f8faff;
+  box-shadow: 0 4px 14px #15264b0b;
+}
+
+.box-items .item-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.label-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #526078;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.label-select input {
+  width: 16px;
+  height: 16px;
+  accent-color: #3859d9;
+  cursor: pointer;
+}
+
+.box-items .label-preview {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  min-height: 0;
+  padding: 3.5% 4%;
+  border: 1px solid #d5d9e0;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 2px 7px #00000012;
+  gap: 2px;
+}
+
+@media (min-width: 700px) {
+  .box-items .line-1 { font-size: clamp(18px, 2vw, 24px); }
+  .box-items .line-2 { font-size: clamp(18px, 2vw, 24px); }
+  .box-items .line-3 { font-size: clamp(14px, 1.5vw, 18px); }
+  .box-items .barcode-bars { font-size: clamp(38px, 4.6vw, 55px); }
+}
+
+@media print {
+  .label-select {
+    display: none !important;
+  }
+  .queue-item:not(.print-target) {
+    display: none !important;
+  }
+}
