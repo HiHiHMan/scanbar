@@ -1,6 +1,6 @@
     @font-face {
-      font-family: "BarcodeFont";
-      src: url("../font/BarcodeFont.TTF") format("truetype");
+      font-family: "LibreBarcode39";
+      src: url("../font/LibreBarcode39.ttf") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
@@ -260,7 +260,7 @@
     }
 
     .barcode-bars {
-      font-family: "BarcodeFont", sans-serif;
+      font-family: "LibreBarcode39", sans-serif;
       font-size: 55px;
       font-weight: normal;
       line-height: 1.15;
@@ -926,7 +926,7 @@
   }
 
   .box-items .queue-item.print-target .barcode-bars {
-    font-family: "BarcodeFont", sans-serif !important;
+    font-family: "LibreBarcode39", sans-serif !important;
     font-size: 55px !important;
     display: block !important;
     visibility: visible !important;
@@ -1367,7 +1367,7 @@ button.secondary {
   .box-items .queue-item.print-target .barcode-bars {
     display: block !important;
     visibility: visible !important;
-    font-family: "BarcodeFont", sans-serif !important;
+    font-family: "LibreBarcode39", sans-serif !important;
     font-size: 55px !important;
     font-weight: normal !important;
     color: #000 !important;
