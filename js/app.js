@@ -66,7 +66,7 @@
       size2: valueOf(row, ['PSize2']),
       size3: valueOf(row, ['PSize3']),
       description: field(row, ['Description']),
-      barcode: valueOf(row, ['BarcodeNo'])
+      barcode: valueOf(row, ['BarcodeNo', 'Barcode'])
     };
   }
 
