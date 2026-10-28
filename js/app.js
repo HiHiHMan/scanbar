@@ -247,6 +247,18 @@
     });
   }
 
+  async function printAfterFontsReady() {
+    try {
+      if (document.fonts && document.fonts.load) {
+        await document.fonts.load('55px "Barcode"');
+        await document.fonts.ready;
+      }
+    } catch (error) {
+      console.warn('Barcode font could not be loaded before printing:', error);
+    }
+    window.print();
+  }
+
   function printSingleLabel(boxIndex, itemIndex) {
     // Do not open the print dialog unless this label still exists in the selected Box.
     if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
@@ -259,7 +271,7 @@
     });
     if (!target) return;
     target.classList.add('print-target');
-    window.print();
+    printAfterFontsReady();
   }
 
   function updatePrintSelectionUI() {
