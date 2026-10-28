@@ -83,7 +83,7 @@
 
         const barcodeBars = document.createElement('div');
         barcodeBars.className = 'barcode-bars';
-        barcodeBars.textContent = data.barcode === '—' ? '' : '*' + data.barcode + '*';
+        barcodeBars.textContent = data.barcode === '—' ? '' :   data.barcode  ;
 
         barcodeLine.appendChild(barcodeBars);
         preview.appendChild(barcodeLine);
