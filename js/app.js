@@ -78,7 +78,19 @@
         productLine.append(productElement, sizeElement);
         preview.appendChild(productLine);
         preview.appendChild(makeLine('line-3', '', data.description));
-        preview.appendChild(makeLine('line-4', '', data.barcode === '—' ? '' : '*' + data.barcode + '*'));
+        const barcodeLine = document.createElement('div');
+        barcodeLine.className = 'label-line line-4';
+
+        const barcodeBars = document.createElement('div');
+        barcodeBars.className = 'barcode-bars';
+        barcodeBars.textContent = data.barcode === '—' ? '' : '*' + data.barcode + '*';
+
+        const barcodeNumber = document.createElement('div');
+        barcodeNumber.className = 'barcode-number';
+        barcodeNumber.textContent = data.barcode === '—' ? '' : data.barcode;
+
+        barcodeLine.append(barcodeBars, barcodeNumber);
+        preview.appendChild(barcodeLine);
         const actions = document.createElement('div'); actions.className = 'item-actions';
         const printButton = document.createElement('button'); printButton.type = 'button'; printButton.textContent = 'พิมพ์ฉลากนี้';
         printButton.addEventListener('click', () => printCards([index]));
