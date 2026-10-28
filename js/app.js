@@ -144,7 +144,7 @@
       return;
     }
     try {
-      await managePrintList({ action: 'insert', barcode, category: 'Box' + (boxIndex + 1) });
+      await managePrintList({ action: 'insert', barcode, category: boxNames[boxIndex] });
       boxes[boxIndex].push(row);
       renderBoxes();
       renderSearchResults(boxIndex);
@@ -241,7 +241,7 @@
           }
           remove.disabled = true;
           try {
-            await managePrintList({ action: 'delete', barcode, category: 'Box' + (boxIndex + 1) });
+            await managePrintList({ action: 'delete', barcode, category: boxNames[boxIndex] });
             selectedLabels.delete(boxIndex + '::' + itemKey(item));
             boxes[boxIndex].splice(itemIndex, 1);
             renderBoxes();
@@ -354,7 +354,7 @@
       boxes.forEach(items => items.splice(0, items.length));
       (Array.isArray(payload.data) ? payload.data : []).forEach(row => {
         const category = valueOf(row, ['Category']);
-        const boxIndex = ({ Box1: 0, Box2: 1, Box3: 2 })[category];
+        const boxIndex = ({ 'Label Repack': 0, 'Label ประตูรับ': 1, 'Label หน้าโหลด': 2 })[category];
         if (boxIndex === undefined) return;
         if (!boxes[boxIndex].some(item => itemKey(item) === itemKey(row))) {
           boxes[boxIndex].push(row);
@@ -422,7 +422,7 @@
       const button = event.currentTarget;
       button.disabled = true;
       try {
-        await managePrintList({ action: 'clearCategory', category: 'Box' + number });
+        await managePrintList({ action: 'clearCategory', category: boxNames[index] });
         boxes[index].forEach(item => selectedLabels.delete(index + '::' + itemKey(item)));
         boxes[index] = [];
         renderBoxes();
