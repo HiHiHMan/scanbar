@@ -256,7 +256,7 @@
     } catch (error) {
       console.warn('Barcode font could not be loaded before printing:', error);
     }
-    printAfterFontsReady();
+    window.print();
   }
 
   function printSingleLabel(boxIndex, itemIndex) {
