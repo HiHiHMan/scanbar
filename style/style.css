@@ -206,7 +206,7 @@
     }
 
     .line-1 {
-      font-size: 13px;
+      font-size: 20px;
       font-weight: 700;
       margin-bottom: 7px
     }
@@ -217,7 +217,7 @@
       align-items: center;
       gap: 6px;
       width: 100%;
-      font-size: clamp(16px, 2.2vw, 22px);
+      font-size: 20px;
       font-weight: 800;
       margin-bottom: 7px;
       white-space: normal
@@ -241,14 +241,14 @@
     }
 
     .line-3 {
-      font-size: 13px;
+      font-size: 20px;
       margin-bottom: 10px;
       min-height: 16px
     }
 
     .line-4 {
       font-family: "Courier New", monospace;
-      font-size: 19px;
+      font-size: 20px;
       font-weight: 800;
       letter-spacing: 1.2px;
       overflow-wrap: anywhere;
@@ -394,12 +394,12 @@
       }
 
       .line-1 {
-        font-size: 10pt;
+        font-size: 20px;
         margin-bottom: 2mm
       }
 
       .line-2 {
-        font-size: 14pt;
+        font-size: 20px;
         gap: 2mm;
         margin-bottom: 2mm
       }
@@ -411,12 +411,12 @@
       }
 
       .line-3 {
-        font-size: 10pt;
+        font-size: 20px;
         margin-bottom: 3mm
       }
 
       .line-4 {
-        font-size: 15pt;
+        font-size: 20px;
         padding-top: 2mm
       }
 
