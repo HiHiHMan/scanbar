@@ -943,3 +943,8 @@
 
 /* Active box workflow */
 .label-action { padding: 7px 9px; font-size: 11px; border-radius: 8px; }
+
+
+.label-action { padding: 7px 9px; font-size: 11px; border-radius: 8px; }
+.label-preview-focus .label-preview { outline: 3px solid #5978e8; outline-offset: 3px; }
+@media print { .box-items .item-head { display: none !important; } }
