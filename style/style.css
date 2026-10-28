@@ -525,15 +525,9 @@
     flex-basis: 100%;
   }
 
-  .queue-actions {
-    width: 100%;
-  }
 
-  .queue-actions button {
-    flex: 1;
-  }
 
-  .results-grid,
+.results-grid,
   .selected-grid {
     grid-template-columns: 1fr;
   }
@@ -742,15 +736,9 @@
     flex-basis: 100%;
   }
 
-  .section-heading > .queue-actions {
-    width: 100%;
-  }
-
-  .section-heading > .queue-actions button {
-    flex: 1;
-  }
-
-  .add-actions {
+  .section-heading >
+.section-heading >
+.add-actions {
     flex-wrap: wrap;
   }
 }
