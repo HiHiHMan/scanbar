@@ -969,12 +969,6 @@ body { background: #f4f7fc; }
   box-shadow: 0 8px 28px #14264b0c;
 }
 .global-actions,
-.box-actions {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-}
 .global-actions { padding: 10px; background: #f4f7ff; border: 1px solid #dbe5ff; border-radius: 13px; }
 .queue-count { font-size: 14px; color: #344563; padding: 0 8px; }
 .queue-count strong { color: #214bd0; font-size: 19px; }
@@ -1048,10 +1042,6 @@ button:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }
 }
 .box-heading h2 { color: #172f5b; font-size: 21px; }
 .box-heading .muted { font-size: 13px; }
-.box-actions { width: 100%; }
-.box-actions button { flex: 1; }
-.box-actions button[id^="printBox"] { color: #fff; background: #6b45d8; }
-.box-actions button[id^="clearBox"] { color: #9f2d27; background: #fff0ef; border: 1px solid #ffd2ce; }
 .results-table th { background: #eaf0fb; color: #253c64; }
 .results-table td { color: #33415b; }
 .add-button { background: #13804a; color: #fff; }
@@ -1065,7 +1055,6 @@ button:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }
   .intro { padding: 18px; }
   .global-actions { width: 100%; }
   .global-actions button { flex: 1 1 140px; }
-  .box-actions button { min-width: 0; }
 }
 @media (max-width: 420px) {
   .global-actions { align-items: stretch; }
