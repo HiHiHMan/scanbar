@@ -1413,6 +1413,30 @@ button.secondary {
   line-height: 1.1;
 }
 
+.print-quantity-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #765044;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.print-quantity {
+  width: 58px;
+  min-height: 30px;
+  padding: 4px 6px;
+  border: 1px solid #ddc5b4;
+  border-radius: 7px;
+  background: #fff;
+  color: #332c29;
+}
+
+.box-items .label-footer .run-number {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 @media print {
   .box-items .queue-item.print-target .label-preview--unavailable {
     display: none !important;
@@ -1421,9 +1445,18 @@ button.secondary {
   .box-items .queue-item.print-target .label-preview--loading .label-footer {
     flex: 0 0 auto;
     margin-top: 0;
+    margin-bottom: 0;
     padding-inline: 2mm;
     font-size: 12px;
     line-height: 1;
+  }
+
+  .box-items .queue-item.print-target .label-footer .run-number {
+    margin-left: auto;
+  }
+
+  .box-items .queue-item.print-target .print-quantity-wrap {
+    display: none !important;
   }
 }
 
