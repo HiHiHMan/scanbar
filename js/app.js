@@ -15,6 +15,39 @@
   let activeBox = 0;
   const boxTabs = document.getElementById("boxTabs");
 
+  const iconPaths = {
+    search: '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>',
+    x: '<path d="m18 6-12 12M6 6l12 12"></path>',
+    printer: '<path d="M6 9V3h12v6"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v7H6z"></path>',
+    trash: '<path d="M3 6h18M8 6V4h8v2m-11 0 1 15h10l1-15M10 10v7m4-7v7"></path>',
+    plus: '<path d="M12 5v14M5 12h14"></path>',
+    check: '<path d="m5 12 4 4L19 6"></path>',
+    box: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 8 9 5 9-5M3 8v9l9 5 9-5V8M12 13v9"></path>',
+    layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 12 9 5 9-5M3 16l9 5 9-5"></path>',
+    barcode: '<path d="M4 5v14M7 5v14M10 5v14M14 5v14M16 5v14M20 5v14"></path>',
+    package: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="M3 8v9l9 4 9-4V8M12 13v8"></path>'
+  };
+
+  function iconMarkup(name) {
+    return '<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (iconPaths[name] || '') + '</svg>';
+  }
+
+  function setButtonIcon(button, name, label) {
+    button.innerHTML = iconMarkup(name) + '<span>' + label + '</span>';
+  }
+
+  function decorateStaticButtons() {
+    setButtonIcon(document.getElementById('printSelected'), 'printer', 'พิมพ์ฉลากที่เลือก (0)');
+    setButtonIcon(printAll, 'layers', 'พิมพ์ทั้งหมด');
+    [1, 2, 3].forEach(number => {
+      setButtonIcon(document.getElementById('printBox' + number), 'printer', 'พิมพ์ Box ' + number);
+      setButtonIcon(document.getElementById('clearBox' + number), 'trash', 'ล้าง Box');
+      setButtonIcon(document.getElementById('searchButton' + number), 'search', 'ค้นหา');
+      setButtonIcon(document.getElementById('clearSearch' + number), 'x', 'ล้าง');
+    });
+  }
+
+
   function valueOf(row, aliases) {
     const keys = Object.keys(row);
     const normalized = new Map(keys.map(key => [key.toLowerCase().replace(/[^a-z0-9]/g, ''), key]));
@@ -129,7 +162,7 @@
       const exists = boxes[boxIndex].some(item => itemKey(item) === itemKey(row));
       const button = document.createElement('button'); button.type = 'button';
       button.className = exists ? 'secondary mini-button added-button' : 'mini-button add-button';
-      button.textContent = exists ? 'เพิ่มแล้ว' : '+ เพิ่มลง Box ' + (boxIndex + 1); button.disabled = exists;
+      setButtonIcon(button, exists ? 'check' : 'plus', exists ? 'เพิ่มแล้ว' : 'เพิ่มลง Box ' + (boxIndex + 1)); button.disabled = exists;
       button.addEventListener('click', () => addToBox(row, boxIndex));
       actionCell.appendChild(button); tr.appendChild(actionCell); state.results.appendChild(tr);
     });
@@ -187,12 +220,12 @@
         const printButton = document.createElement('button');
         printButton.type = 'button';
         printButton.className = 'label-action print-label-button';
-        printButton.textContent = 'Print';
+        setButtonIcon(printButton, 'printer', 'พิมพ์');
         printButton.addEventListener('click', () => printSingleLabel(boxIndex, itemIndex));
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove-button';
-        remove.textContent = 'ลบ';
+        setButtonIcon(remove, 'trash', 'ลบ');
         remove.addEventListener('click', () => {
           selectedLabels.delete(boxIndex + '::' + itemKey(item));
           boxes[boxIndex].splice(itemIndex, 1);
@@ -214,7 +247,7 @@
       tab.className = 'box-tab' + (boxIndex === activeBox ? ' active' : '');
       tab.setAttribute('role', 'tab');
       tab.setAttribute('aria-selected', String(boxIndex === activeBox));
-      tab.textContent = 'Box ' + (boxIndex + 1) + ' (' + items.length + ')';
+      tab.innerHTML = iconMarkup('box') + '<span>Box ' + (boxIndex + 1) + ' (' + items.length + ')</span>';
       tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); });
       boxTabs.appendChild(tab);
     });
@@ -238,7 +271,7 @@
   function updatePrintSelectionUI() {
     const selectedCount = selectedLabels.size;
     printSelected.disabled = selectedCount === 0;
-    printSelected.textContent = 'พิมพ์ฉลากที่เลือก (' + selectedCount + ')';
+    setButtonIcon(printSelected, 'printer', 'พิมพ์ฉลากที่เลือก (' + selectedCount + ')');
   }
 
   function printQueue(boxIndex = null, selectedOnly = false) {
@@ -326,6 +359,7 @@
     document.getElementById('printBox' + number).addEventListener('click', () => printQueue(index));
   });
 
+  decorateStaticButtons();
   renderBoxes();
   boxSearches.forEach((_, index) => renderSearchResults(index));
   checkConnection();
