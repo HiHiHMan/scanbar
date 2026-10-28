@@ -60,6 +60,8 @@ func main() {
 	mux.HandleFunc("GET /api/health", a.health)
 	mux.HandleFunc("GET /api/labels", a.labels)
 	mux.HandleFunc("GET /api/labels/search", a.searchLabels)
+	mux.HandleFunc("GET /api/label-print-list", a.labelPrintList)
+	mux.HandleFunc("POST /api/label-print-list", a.manageLabelPrintList)
 	mux.Handle("GET /style/", http.StripPrefix("/style/", http.FileServer(http.Dir("style"))))
 	mux.Handle("GET /js/", http.StripPrefix("/js/", http.FileServer(http.Dir("js"))))
 	mux.Handle("GET /font/", http.StripPrefix("/font/", http.FileServer(http.Dir("font"))))
@@ -287,6 +289,130 @@ func (a *app) searchLabels(w http.ResponseWriter, r *http.Request) {
 		"count": len(data),
 		"data":  data,
 	})
+}
+
+func (a *app) labelPrintList(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	const query = `
+		SELECT
+			pl.[Barcode],
+			pl.[Category],
+			pl.[CreateAt],
+			lp.[ProductID],
+			lp.[Description],
+			lp.[BarcodeNo],
+			lp.[Location],
+			lp.[PSize1],
+			lp.[PSize2],
+			lp.[PSize3]
+		FROM [Inventory].[dbo].[Tbl_Label_PrintList] pl
+		LEFT JOIN [Inventory].[dbo].[Tbl_Label_Prints] lp
+			ON lp.[BarcodeNo] = pl.[Barcode]
+		ORDER BY pl.[Category], pl.[CreateAt], pl.[Barcode]`
+
+	rows, err := a.db.QueryContext(ctx, query)
+	if err != nil {
+		log.Printf("read label print list failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read saved Box items"})
+		return
+	}
+	defer rows.Close()
+
+	data := make([]map[string]any, 0)
+	for rows.Next() {
+		var barcode, category sql.NullString
+		var createdAt any
+		var productID, description, barcodeNo, location, psize1, psize2, psize3 sql.NullString
+		if err := rows.Scan(&barcode, &category, &createdAt, &productID, &description, &barcodeNo, &location, &psize1, &psize2, &psize3); err != nil {
+			log.Printf("scan label print list failed: %v", err)
+			writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read a saved Box item"})
+			return
+		}
+		data = append(data, map[string]any{
+			"Barcode": barcode.String, "Category": category.String, "CreateAt": createdAt,
+			"ProductID": productID.String, "Description": description.String, "BarcodeNo": barcodeNo.String,
+			"Location": location.String, "PSize1": psize1.String, "PSize2": psize2.String, "PSize3": psize3.String,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("iterate label print list failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed while reading saved Box items"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"count": len(data), "data": data})
+}
+
+type labelPrintListRequest struct {
+	Action   string `json:"action"`
+	Barcode  string `json:"barcode"`
+	Category string `json:"category"`
+}
+
+func (a *app) manageLabelPrintList(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	var req labelPrintListRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, apiError{Error: "invalid JSON request body"})
+		return
+	}
+
+	req.Action = strings.ToLower(strings.TrimSpace(req.Action))
+	req.Barcode = strings.TrimSpace(req.Barcode)
+	req.Category = strings.TrimSpace(req.Category)
+	validCategories := map[string]bool{"Box1": true, "Box2": true, "Box3": true}
+
+	switch req.Action {
+	case "insert":
+		if req.Barcode == "" || !validCategories[req.Category] {
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "barcode and a valid category (Box1, Box2, Box3) are required"})
+			return
+		}
+	case "delete":
+		if req.Barcode == "" || !validCategories[req.Category] {
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "barcode and category are required to remove one item"})
+			return
+		}
+	case "clearcategory":
+		if !validCategories[req.Category] {
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "a valid category (Box1, Box2, Box3) is required"})
+			return
+		}
+	case "builddata":
+		// No additional parameters required.
+	default:
+		writeJSON(w, http.StatusBadRequest, apiError{Error: "action must be insert, delete, clearCategory, or buildData"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+	_, err := a.db.ExecContext(ctx,
+		"EXEC [dbo].[Label_prints] @Action = @p1, @Barcode = @p2, @Category = @p3",
+		req.Action, nullableString(req.Barcode), nullableString(req.Category),
+	)
+	if err != nil {
+		log.Printf("Label_prints action %q failed: %v", req.Action, err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "stored procedure failed; check dbo.Label_prints parameters and SQL Server logs"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status": "success",
+		"action": req.Action,
+		"barcode": req.Barcode,
+		"category": req.Category,
+	})
+}
+
+func nullableString(value string) any {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	return value
 }
 
 func serveIndex(w http.ResponseWriter, r *http.Request) {
