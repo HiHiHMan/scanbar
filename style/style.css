@@ -492,13 +492,6 @@
   font-size: 20px;
 }
 
-.queue-actions {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-}
-
 .queue-count {
   color: #68758c;
   font-size: 13px;
@@ -698,27 +691,10 @@
   font-size: 18px;
 }
 
-.queue-actions {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-}
-
 .queue-count {
   color: #68758c;
   font-size: 13px;
   padding: 0 5px;
-}
-
-.box-heading .queue-actions {
-  width: 100%;
-}
-
-.box-heading .queue-actions button {
-  flex: 1;
-  padding: 8px 9px;
-  font-size: 11px;
 }
 
 .box-items {
