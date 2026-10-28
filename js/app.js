@@ -53,7 +53,7 @@
         head.append(selectLabel, number);
         const data = labelData(row);
         const preview = document.createElement('div'); preview.className = 'label-preview';
-        preview.appendChild(makeLine('line-1', '', "FORM " + data.location));
+        preview.appendChild(makeLine('line-1', '', "form " + data.location));
         const productLine = document.createElement('div');
         productLine.className = 'label-line line-2';
 
