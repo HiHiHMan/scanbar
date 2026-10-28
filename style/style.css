@@ -1060,3 +1060,24 @@ button:disabled { opacity: .42; box-shadow: none; cursor: not-allowed; }
   .global-actions { align-items: stretch; }
   .queue-count { width: 100%; }
 }
+
+
+/* Animated dot-grid background */
+#dotCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  background: #fff;
+}
+
+.topbar,
+.wrap {
+  position: relative;
+  z-index: 1;
+}
+
+body {
+  background: #fff;
+}
