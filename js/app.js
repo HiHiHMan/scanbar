@@ -103,7 +103,14 @@
     const data = labelData(row);
     if (boxIndex === 2) preview.classList.add('label-preview--loading');
 
-    preview.appendChild(makeLocationLine(data.location));
+    if (boxIndex === 2) {
+      const line1 = document.createElement('div');
+      line1.className = 'label-line line-1';
+      line1.textContent = 'จ่ายหน้า Load';
+      preview.appendChild(line1);
+    } else {
+      preview.appendChild(makeLocationLine(data.location));
+    }
 
     const productLine = document.createElement('div');
     productLine.className = 'label-line line-2';
@@ -112,11 +119,12 @@
     productElement.textContent = data.productID === '—' ? '-' : data.productID;
     const sizeElement = document.createElement('span');
     sizeElement.className = 'psize';
-    sizeElement.textContent = [data.size1, data.size2, data.size3]
+    sizeElement.textContent = boxIndex === 2 ? '' : [data.size1, data.size2, data.size3]
       .map(size => size && size !== '—' ? size : '9').join(' X ');
     productLine.append(productElement, sizeElement);
     preview.appendChild(productLine);
-    preview.appendChild(makeLine('line-3', '', data.description));
+    const descriptionLine = makeLine('line-3' + (boxIndex === 2 ? ' line-3-loading' : ''), '', data.description);
+    preview.appendChild(descriptionLine);
 
     const barcodeLine = document.createElement('div');
     barcodeLine.className = 'label-line line-4';
