@@ -1137,8 +1137,9 @@ body {
 }
 
 .topbar {
-  background: linear-gradient(115deg, #49342f 0%, #765044 58%, #94664d 100%);
+  background: #49342f;
   box-shadow: 0 5px 22px rgb(73 52 47 / 14%);
+  border-bottom: 2px solid #bd6842;
 }
 
 .intro {
