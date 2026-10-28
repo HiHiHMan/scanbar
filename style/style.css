@@ -947,3 +947,33 @@
 .label-action { padding: 7px 9px; font-size: 11px; border-radius: 8px; }
 .label-preview-focus .label-preview { outline: 3px solid #5978e8; outline-offset: 3px; }
 @media print { .box-items .item-head { display: none !important; } }
+
+
+/* Final print cleanup: print labels only, never empty Box placeholders or card borders */
+@media print {
+  .box-items .empty {
+    display: none !important;
+  }
+
+  .box-items .queue-item:not(.print-target) {
+    display: none !important;
+  }
+
+  .box-items .queue-item.print-target {
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview {
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+}
