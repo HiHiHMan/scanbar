@@ -26,38 +26,6 @@
         return '';
       }
       function field(row, aliases) { return valueOf(row, aliases) || '—'; }
-      function encodeEAN13(value) {
-        const input = String(value ?? '').trim();
-        if (!/^\\d{12,13}$/.test(input)) return '';
-
-        const digits = input.slice(0, 12);
-        let sum = 0;
-        for (let i = 0; i < digits.length; i++) {
-          sum += Number(digits[i]) * (i % 2 === 0 ? 1 : 3);
-        }
-        const checkDigit = String((10 - (sum % 10)) % 10);
-
-        // ถ้ามีเลขตรวจสอบหลักที่ 13 มาแล้ว ต้องตรงกับค่าที่คำนวณได้
-        if (input.length === 13 && input[12] !== checkDigit) return '';
-
-        const firstDigit = Number(digits[0]);
-        const patterns = [
-          'AAAAAA', 'AABABB', 'AABBAB', 'AABBBA', 'ABAABB',
-          'ABBAAB', 'ABBBAA', 'ABABAB', 'ABABBA', 'ABBABA'
-        ];
-        let encoded = digits[0];
-        for (let i = 1; i <= 6; i++) {
-          const digit = Number(digits[i]);
-          encoded += String.fromCharCode((patterns[firstDigit][i - 1] === 'A' ? 65 : 75) + digit);
-        }
-        encoded += '*';
-        for (let i = 7; i < 12; i++) {
-          encoded += String.fromCharCode(97 + Number(digits[i]));
-        }
-        encoded += String.fromCharCode(97 + Number(checkDigit)) + '+';
-        return encoded;
-      }
-
       function labelData(row) {
         return {
           location: field(row, ['Location']),
@@ -115,7 +83,7 @@
 
         const barcodeBars = document.createElement('div');
         barcodeBars.className = 'barcode-bars';
-        barcodeBars.textContent = encodeEAN13(data.barcode);
+        barcodeBars.textContent = data.barcode;
 
         barcodeLine.appendChild(barcodeBars);
         preview.appendChild(barcodeLine);
