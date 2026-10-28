@@ -197,6 +197,8 @@
       border-radius: 5px;
       padding: 12px 11px;
       min-height: 160px;
+      height: 200px;
+      box-sizing: border-box;
       color: #111;
       overflow: hidden;
       display: flex;
