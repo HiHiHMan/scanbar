@@ -212,10 +212,32 @@
     }
 
     .line-2 {
-      font-size: 14px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      font-size: clamp(16px, 2.2vw, 22px);
       font-weight: 800;
       margin-bottom: 7px;
       white-space: normal
+    }
+
+    .productID,
+    .psize {
+      min-width: 0;
+      max-width: 100%;
+      font-size: inherit;
+      font-weight: 800;
+      overflow-wrap: anywhere
+    }
+
+    .productID {
+      flex: 1 1 45%;
+    }
+
+    .psize {
+      flex: 1 1 55%;
     }
 
     .line-3 {
@@ -377,8 +399,15 @@
       }
 
       .line-2 {
-        font-size: 11pt;
+        font-size: 14pt;
+        gap: 2mm;
         margin-bottom: 2mm
+      }
+
+      .productID,
+      .psize {
+        font-size: inherit;
+        line-height: 1.1
       }
 
       .line-3 {
