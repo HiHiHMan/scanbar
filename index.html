@@ -1,45 +1,60 @@
 <!doctype html>
 <html lang="th">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Scanbar | Label Studio</title>
-    <link rel="stylesheet" href="./style/style.css">
+  <link rel="stylesheet" href="./style/style.css">
 </head>
-
 <body>
   <header class="topbar">
     <div>
       <div class="brand">Scanbar <span class="status">LABEL STUDIO</span></div>
-      <div class="subtitle">Inventory · Tbl_Label_Prints · Label preview & print</div>
+      <div class="subtitle">Inventory · Search and print labels</div>
     </div>
     <div id="connection" class="status">กำลังตรวจสอบการเชื่อมต่อ…</div>
   </header>
+
   <main class="wrap">
     <section class="intro">
       <div>
         <h1>Label Print Studio</h1>
-        <div class="muted">เลือกข้อมูล แล้วพิมพ์เป็นฉลาก 4 บรรทัดสำหรับเครื่องพิมพ์ Label</div>
-      </div>
-      <div class="toolbar">
-        <input id="search" type="search" placeholder="ค้นหา Location, Product ID, Barcode…" aria-label="ค้นหาข้อมูล">
-        <button class="secondary" id="refresh" type="button">↻ รีเฟรช</button>
-        <button class="secondary" id="selectAll" type="button">เลือกทั้งหมด</button>
-        <button id="printSelected" type="button">พิมพ์ที่เลือก</button>
+        <div class="muted">ค้นหาด้วย Product ID แล้วเพิ่มฉลากที่ต้องการลงในรายการพิมพ์</div>
       </div>
     </section>
-    <section class="stats">
-      <div class="stat"><strong id="totalCount">—</strong><span>ข้อมูลทั้งหมด</span></div>
-      <div class="stat"><strong id="visibleCount">—</strong><span>รายการที่แสดง</span></div>
-      <div class="stat"><strong id="selectedCount">0</strong><span>รายการที่เลือกพิมพ์</span></div>
-    </section>
-    <section id="labels" class="grid">
-      <div class="empty">กำลังโหลดข้อมูล…</div>
-    </section>
-    <div class="foot"><span id="count">0 รายการ</span><span id="updated">ยังไม่ได้อัปเดต</span></div>
-  </main>
-    <script src="./js/app.js" defer></script>
-</body>
 
+    <section class="search-panel" aria-labelledby="searchTitle">
+      <label id="searchTitle" for="search">ค้นหา Product ID</label>
+      <div class="search-row">
+        <input id="search" type="search" placeholder="กรอก Product ID แล้วกด Enter" aria-label="ค้นหา Product ID">
+        <button id="searchButton" type="button">ค้นหา</button>
+        <button class="secondary" id="clearSearch" type="button">ล้าง</button>
+      </div>
+      <p class="search-hint">ระบบจะค้นหาเมื่อกด Enter หรือปุ่มค้นหาเท่านั้น</p>
+      <div id="searchResults" class="grid results-grid">
+        <div class="empty">กรอก Product ID เพื่อเริ่มค้นหา</div>
+      </div>
+    </section>
+
+    <section class="queue-section" aria-labelledby="queueTitle">
+      <div class="section-heading">
+        <div>
+          <h2 id="queueTitle">รายการที่เตรียมพิมพ์</h2>
+          <div class="muted">เพิ่มจากผลการค้นหา และลบรายการออกได้ก่อนพิมพ์</div>
+        </div>
+        <div class="queue-actions">
+          <span class="queue-count"><strong id="selectedCount">0</strong> รายการ</span>
+          <button id="clearQueue" type="button" class="secondary">ล้างรายการ</button>
+          <button id="printSelected" type="button" disabled>พิมพ์ทั้งหมด</button>
+        </div>
+      </div>
+      <section id="selectedLabels" class="grid selected-grid">
+        <div class="empty">ยังไม่มีรายการในคิวพิมพ์</div>
+      </section>
+    </section>
+
+    <div class="foot"><span id="count">พร้อมค้นหา</span><span id="updated">ยังไม่ได้ค้นหา</span></div>
+  </main>
+  <script src="./js/app.js" defer></script>
+</body>
 </html>
