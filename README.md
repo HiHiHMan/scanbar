@@ -1,4 +1,4 @@
-"# scanbar" 
+"# BarLabel" 
 :setup
 go mod tidy
 
