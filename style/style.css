@@ -1108,3 +1108,20 @@ button:has(.ui-icon) {
   button:has(.ui-icon) { gap: 5px; }
   .ui-icon { width: 15px; height: 15px; flex-basis: 15px; }
 }
+
+/* Never include the animated screen background in printed labels */
+@media print {
+  #dotCanvas {
+    display: none !important;
+  }
+
+  html,
+  body,
+  .wrap,
+  .box-items,
+  .box-items .queue-item.print-target,
+  .box-items .queue-item.print-target .label-preview {
+    background: #fff !important;
+    background-image: none !important;
+  }
+}
