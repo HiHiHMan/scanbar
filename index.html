@@ -19,7 +19,7 @@
     <section class="intro">
       <div>
         <h1>Label Print Studio</h1>
-        <div class="muted">เลือก Box ก่อน แล้วค้นหาเพื่อเพิ่มรายการลง Box ที่เลือก</div>
+        <div class="muted">ทำตาม 4 ขั้นตอน: เลือก Box → ค้นหา Product ID → เพิ่มรายการ → พิมพ์ฉลาก</div>
       </div>
     </section>
 
@@ -29,12 +29,13 @@
           <h2 id="boxesTitle">รายการในแต่ละ Box</h2>
           <div class="muted">แต่ละ Box แยกกัน สามารถเพิ่ม ลบ และพิมพ์รายการได้</div>
         </div>
-        <div class="queue-actions">
+        <div class="global-actions">
           <span class="queue-count">รวม <strong id="selectedCount">0</strong> ฉลาก</span>
           <button id="printSelected" type="button" disabled>พิมพ์ฉลากที่เลือก (0)</button>
           <button id="printAll" type="button" class="secondary" disabled>พิมพ์ทั้งหมด</button>
         </div>
       </div>
+      <div class="workflow-steps" aria-label="ขั้นตอนการใช้งาน"><div class="workflow-step"><span>1</span><strong>เลือก Box</strong></div><div class="workflow-step"><span>2</span><strong>ค้นหา Product ID</strong></div><div class="workflow-step"><span>3</span><strong>เพิ่มรายการ</strong></div><div class="workflow-step"><span>4</span><strong>พิมพ์ฉลาก</strong></div></div>
       <div id="boxTabs" class="box-tabs" role="tablist" aria-label="เลือก Box"></div>
       <div class="boxes-grid">
         <section class="queue-section" aria-labelledby="box1Title">
@@ -43,7 +44,7 @@
               <h2 id="box1Title">Box 1</h2>
               <div class="muted"><span id="box1Count">0</span> รายการ</div>
             </div>
-            <div class="queue-actions">
+            <div class="box-actions">
               <button id="printBox1" type="button" class="secondary" disabled>พิมพ์ Box 1</button>
               <button id="clearBox1" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
@@ -72,7 +73,7 @@
               <h2 id="box2Title">Box 2</h2>
               <div class="muted"><span id="box2Count">0</span> รายการ</div>
             </div>
-            <div class="queue-actions">
+            <div class="box-actions">
               <button id="printBox2" type="button" class="secondary" disabled>พิมพ์ Box 2</button>
               <button id="clearBox2" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
@@ -101,7 +102,7 @@
               <h2 id="box3Title">Box 3</h2>
               <div class="muted"><span id="box3Count">0</span> รายการ</div>
             </div>
-            <div class="queue-actions">
+            <div class="box-actions">
               <button id="printBox3" type="button" class="secondary" disabled>พิมพ์ Box 3</button>
               <button id="clearBox3" type="button" class="secondary" disabled>ล้าง Box</button>
             </div>
