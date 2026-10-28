@@ -217,7 +217,7 @@
     .line-1 {
       font-size: 18px;
       font-weight: 600;
-      margin-bottom: 7px
+      margin-bottom: 5px
     }
 
     .line-2 {
@@ -228,7 +228,7 @@
       width: 100%;
       font-size: 20px;
       font-weight: 800;
-      margin-bottom: 7px;
+      margin-bottom: 5px;
       white-space: normal
     }
 
@@ -251,7 +251,7 @@
 
     .line-3 {
       font-size: 18px;
-      margin-bottom: 5px;
+      margin-bottom: 10px;
       min-height: 16px
     }
 
@@ -421,13 +421,13 @@
 
       .line-1 {
         font-size: 18px;
-        margin-bottom: 2mm
+        margin-bottom: 5px
       }
 
       .line-2 {
         font-size: 20px;
         gap: 2mm;
-        margin-bottom: 2mm
+        margin-bottom: 5px
       }
 
       .productID,
@@ -438,7 +438,7 @@
 
       .line-3 {
         font-size: 18px;
-        margin-bottom: 3mm
+        margin-bottom: 10px
       }
 
       .line-4 {
