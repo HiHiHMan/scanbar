@@ -256,7 +256,7 @@
     } catch (error) {
       console.warn('Barcode font could not be loaded before printing:', error);
     }
-    window.print();
+    printAfterFontsReady();
   }
 
   function printSingleLabel(boxIndex, itemIndex) {
@@ -265,12 +265,12 @@
 
     let target = null;
     document.querySelectorAll('.queue-item').forEach(card => {
-      card.classList.remove('print-target');
+      card.classList.remove('print-target', 'print-last');
       const matches = Number(card.dataset.box) === boxIndex && Number(card.dataset.itemIndex) === itemIndex;
       if (matches) target = card;
     });
     if (!target) return;
-    target.classList.add('print-target');
+    target.classList.add('print-target', 'print-last');
     printAfterFontsReady();
   }
 
@@ -302,12 +302,13 @@
 
     // Empty Box / no selected labels: do not invoke the browser print dialog.
     if (printableCards.length === 0) return;
-    printableCards.forEach(card => card.classList.add('print-target'));
-    window.print();
+    printableCards.forEach(card => { card.classList.add('print-target'); card.classList.remove('print-last'); });
+    printableCards[printableCards.length - 1].classList.add('print-last');
+    printAfterFontsReady();
   }
 
   window.addEventListener('afterprint', () => {
-    document.querySelectorAll('.queue-item').forEach(card => card.classList.remove('print-target'));
+    document.querySelectorAll('.queue-item').forEach(card => card.classList.remove('print-target', 'print-last'));
   });
 
   async function checkConnection() {
