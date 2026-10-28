@@ -3,9 +3,7 @@
   const searchButton = document.getElementById('searchButton');
   const clearSearch = document.getElementById('clearSearch');
   const searchResults = document.getElementById('searchResults');
-  const selectedLabels = document.getElementById('selectedLabels');
   const printSelected = document.getElementById('printSelected');
-  const clearQueue = document.getElementById('clearQueue');
   const connection = document.getElementById('connection');
   const selectedCount = document.getElementById('selectedCount');
   const count = document.getElementById('count');
@@ -13,7 +11,7 @@
 
   let searchRequest = 0;
   let searchResultsData = [];
-  let selectedItems = [];
+  const boxes = [[], [], []];
 
   function valueOf(row, aliases) {
     const keys = Object.keys(row);
@@ -88,91 +86,122 @@
     return preview;
   }
 
-  function addMessage(container, message, error = false) {
-    container.replaceChildren();
-    const element = document.createElement('div');
-    element.className = 'empty' + (error ? ' error' : '');
-    element.textContent = message;
-    container.appendChild(element);
+  function addTableMessage(message, error = false) {
+    searchResults.replaceChildren();
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 6;
+    cell.className = 'table-message' + (error ? ' error' : '');
+    cell.textContent = message;
+    row.appendChild(cell);
+    searchResults.appendChild(row);
   }
 
   function itemKey(row) {
-    return JSON.stringify(row);
+    const data = labelData(row);
+    return [data.location, data.productID, data.barcode].join('|');
   }
 
-  function createResultCard(row, index) {
-    const card = document.createElement('article');
-    card.className = 'item';
-    card.appendChild(createLabelPreview(row));
-
-    const actions = document.createElement('div');
-    actions.className = 'item-actions';
-    const addButton = document.createElement('button');
-    const alreadyAdded = selectedItems.some(item => itemKey(item) === itemKey(row));
-    addButton.type = 'button';
-    addButton.className = alreadyAdded ? 'secondary' : '';
-    addButton.textContent = alreadyAdded ? 'เพิ่มแล้ว' : '+ เพิ่มรายการ';
-    addButton.disabled = alreadyAdded;
-    addButton.addEventListener('click', () => {
-      if (selectedItems.some(item => itemKey(item) === itemKey(row))) return;
-      selectedItems.push(row);
-      renderQueue();
-      renderSearchResults();
-    });
-    actions.appendChild(addButton);
-    card.appendChild(actions);
-    return card;
+  function addToBox(row, boxIndex) {
+    if (boxes[boxIndex].some(item => itemKey(item) === itemKey(row))) return;
+    boxes[boxIndex].push(row);
+    renderBoxes();
+    renderSearchResults();
   }
 
   function renderSearchResults() {
     searchResults.replaceChildren();
     if (!searchResultsData.length) {
-      addMessage(searchResults, search.value.trim() ? 'ไม่พบ Product ID นี้' : 'กรอก Product ID เพื่อเริ่มค้นหา');
-      return;
-    }
-    searchResultsData.forEach((row, index) => searchResults.appendChild(createResultCard(row, index)));
-  }
-
-  function renderQueue() {
-    selectedLabels.replaceChildren();
-    selectedCount.textContent = selectedItems.length.toLocaleString();
-    printSelected.disabled = selectedItems.length === 0;
-    clearQueue.disabled = selectedItems.length === 0;
-
-    if (!selectedItems.length) {
-      addMessage(selectedLabels, 'ยังไม่มีรายการในคิวพิมพ์');
+      addTableMessage(search.value.trim() ? 'ไม่พบ Product ID นี้' : 'กรอก Product ID เพื่อเริ่มค้นหา');
       return;
     }
 
-    selectedItems.forEach((row, index) => {
-      const card = document.createElement('article');
-      card.className = 'item queue-item';
-      card.dataset.queueIndex = String(index);
-      const head = document.createElement('div');
-      head.className = 'item-head';
-      const number = document.createElement('span');
-      number.className = 'item-index';
-      number.textContent = 'รายการ ' + String(index + 1).padStart(2, '0');
-      const removeButton = document.createElement('button');
-      removeButton.type = 'button';
-      removeButton.className = 'remove-button';
-      removeButton.textContent = 'ลบรายการ';
-      removeButton.setAttribute('aria-label', 'ลบรายการที่ ' + (index + 1));
-      removeButton.addEventListener('click', () => {
-        selectedItems.splice(index, 1);
-        renderQueue();
-        renderSearchResults();
+    searchResultsData.forEach(row => {
+      const data = labelData(row);
+      const tr = document.createElement('tr');
+      [data.location, data.productID, [data.size1, data.size2, data.size3].filter(Boolean).join(' × ') || '—', data.description, data.barcode || '—']
+        .forEach(value => {
+          const td = document.createElement('td');
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+      const actionCell = document.createElement('td');
+      actionCell.className = 'add-actions';
+      boxes.forEach((box, boxIndex) => {
+        const button = document.createElement('button');
+        const exists = box.some(item => itemKey(item) === itemKey(row));
+        button.type = 'button';
+        button.className = exists ? 'secondary mini-button' : 'mini-button';
+        button.textContent = exists ? 'เพิ่มแล้ว' : 'Box ' + (boxIndex + 1) + ' +';
+        button.disabled = exists;
+        button.addEventListener('click', () => addToBox(row, boxIndex));
+        actionCell.appendChild(button);
       });
-      head.append(number, removeButton);
-      card.append(head, createLabelPreview(row));
-      selectedLabels.appendChild(card);
+      tr.appendChild(actionCell);
+      searchResults.appendChild(tr);
     });
   }
 
-  function printQueue() {
-    if (!selectedItems.length) return;
-    document.querySelectorAll('.queue-item').forEach(card => card.classList.add('print-target'));
-    window.print();
+  function renderBoxes() {
+    let total = 0;
+    boxes.forEach((items, boxIndex) => {
+      const number = boxIndex + 1;
+      const container = document.getElementById('box' + number);
+      const boxCount = document.getElementById('box' + number + 'Count');
+      const clearButton = document.getElementById('clearBox' + number);
+      const printButton = document.getElementById('printBox' + number);
+      boxCount.textContent = items.length.toLocaleString();
+      clearButton.disabled = items.length === 0;
+      printButton.disabled = items.length === 0;
+      total += items.length;
+      container.replaceChildren();
+
+      if (!items.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = 'ยังไม่มีรายการใน Box ' + number;
+        container.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item, itemIndex) => {
+        const card = document.createElement('article');
+        card.className = 'item queue-item';
+        card.dataset.box = String(boxIndex);
+        card.dataset.itemIndex = String(itemIndex);
+        const head = document.createElement('div');
+        head.className = 'item-head';
+        const label = document.createElement('span');
+        label.className = 'item-index';
+        label.textContent = 'รายการ ' + String(itemIndex + 1).padStart(2, '0');
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'remove-button';
+        remove.textContent = 'ลบ';
+        remove.addEventListener('click', () => {
+          boxes[boxIndex].splice(itemIndex, 1);
+          renderBoxes();
+          renderSearchResults();
+        });
+        head.append(label, remove);
+        card.append(head, createLabelPreview(item));
+        container.appendChild(card);
+      });
+    });
+    selectedCount.textContent = total.toLocaleString();
+    printSelected.disabled = total === 0;
+  }
+
+  function printQueue(boxIndex = null) {
+    const cards = document.querySelectorAll('.queue-item');
+    let hasItems = false;
+    cards.forEach(card => {
+      const shouldPrint = boxIndex === null || Number(card.dataset.box) === boxIndex;
+      card.classList.toggle('print-target', shouldPrint);
+      if (shouldPrint) hasItems = true;
+    });
+    if (hasItems) window.print();
   }
 
   window.addEventListener('afterprint', () => {
@@ -200,11 +229,11 @@
       searchResultsData = [];
       renderSearchResults();
       count.textContent = 'พร้อมค้นหา';
-      updated.textContent = 'ล้างคำค้นหาแล้ว';
+      updated.textContent = 'กรอก Product ID เพื่อค้นหา';
       return;
     }
 
-    addMessage(searchResults, 'กำลังค้นหา Product ID…');
+    addTableMessage('กำลังค้นหา Product ID…');
     searchButton.disabled = true;
     try {
       const response = await fetch('/api/labels/search?productID=' + encodeURIComponent(productID));
@@ -222,7 +251,7 @@
       updated.textContent = 'ค้นหา Product ID: ' + productID + ' · ' + new Date().toLocaleString('th-TH');
     } catch (error) {
       if (requestId !== searchRequest) return;
-      addMessage(searchResults, error.message, true);
+      addTableMessage(error.message, true);
     } finally {
       if (requestId === searchRequest) searchButton.disabled = false;
     }
@@ -244,14 +273,18 @@
     updated.textContent = 'ล้างคำค้นหาแล้ว';
     search.focus();
   });
-  clearQueue.addEventListener('click', () => {
-    selectedItems = [];
-    renderQueue();
-    renderSearchResults();
+  printSelected.addEventListener('click', () => printQueue());
+  [0, 1, 2].forEach(index => {
+    const number = index + 1;
+    document.getElementById('clearBox' + number).addEventListener('click', () => {
+      boxes[index] = [];
+      renderBoxes();
+      renderSearchResults();
+    });
+    document.getElementById('printBox' + number).addEventListener('click', () => printQueue(index));
   });
-  printSelected.addEventListener('click', printQueue);
 
-  renderQueue();
+  renderBoxes();
   renderSearchResults();
   checkConnection();
 })();
