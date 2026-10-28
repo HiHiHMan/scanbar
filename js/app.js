@@ -12,6 +12,8 @@
   let searchRequest = 0;
   let searchResultsData = [];
   const boxes = [[], [], []];
+  let activeBox = 0;
+  const boxTabs = document.getElementById("boxTabs");
 
   function valueOf(row, aliases) {
     const keys = Object.keys(row);
@@ -148,6 +150,10 @@
     boxes.forEach((items, boxIndex) => {
       const number = boxIndex + 1;
       const container = document.getElementById('box' + number);
+      const section = container.closest('.queue-section');
+      section.classList.toggle('active-box', boxIndex === activeBox);
+      section.setAttribute('role', 'tabpanel');
+      section.setAttribute('aria-hidden', String(boxIndex !== activeBox));
       const boxCount = document.getElementById('box' + number + 'Count');
       const clearButton = document.getElementById('clearBox' + number);
       const printButton = document.getElementById('printBox' + number);
@@ -191,6 +197,17 @@
     });
     selectedCount.textContent = total.toLocaleString();
     printSelected.disabled = total === 0;
+    boxTabs.replaceChildren();
+    boxes.forEach((items, boxIndex) => {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'box-tab' + (boxIndex === activeBox ? ' active' : '');
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-selected', String(boxIndex === activeBox));
+      tab.textContent = 'Box ' + (boxIndex + 1) + ' (' + items.length + ')';
+      tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); });
+      boxTabs.appendChild(tab);
+    });
   }
 
   function printQueue(boxIndex = null) {
