@@ -1,6 +1,6 @@
     @font-face {
       font-family: "LibreBarcode39";
-      src: url("../font/LibreBarcode39.ttf") format("truetype");
+      src: url("../font/LibreBarcode39.ttf?v=20261029-2") format("truetype");
       font-weight: normal;
       font-style: normal;
     }
@@ -260,7 +260,7 @@
     }
 
     .barcode-bars {
-      font-family: "LibreBarcode39", sans-serif;
+      font-family: "LibreBarcode39", sans-serif !important;
       font-size: 55px;
       font-weight: normal;
       line-height: 1.15;
