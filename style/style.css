@@ -1428,13 +1428,21 @@ button.secondary {
 }
 
 
-/* Loading label: add space below description line */
+/* Loading label: spacing belongs below the barcode line, not the description. */
 .box-items .label-preview--loading .line-3-loading {
+  margin-bottom: 0 !important;
+}
+
+.box-items .label-preview--loading .line-4 {
   margin-bottom: 8px;
 }
 
 @media print {
   .box-items .queue-item.print-target .label-preview--loading .line-3-loading {
+    margin-bottom: 0 !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview--loading .line-4 {
     margin-bottom: 2mm !important;
   }
 }
