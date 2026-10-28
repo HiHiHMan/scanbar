@@ -242,14 +242,14 @@
         head.className = 'item-head';
         const label = document.createElement('span');
         label.className = 'item-index';
-        label.textContent = 'ฉลาก ' + String(itemIndex + 1).padStart(2, '0');
+        label.textContent = '# ' + String(itemIndex + 1).padStart(2, '0');
         const selectionKey = boxIndex + '::' + itemKey(item);
         const selectWrap = document.createElement('label');
         selectWrap.className = 'label-select';
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.checked = selectedLabels.has(selectionKey);
-        checkbox.setAttribute('aria-label', 'เลือกฉลาก ' + (itemIndex + 1) + ' สำหรับพิมพ์');
+        checkbox.setAttribute('aria-label', 'เลือก #' + (itemIndex + 1) + ' สำหรับพิมพ์');
         checkbox.addEventListener('change', () => {
           if (checkbox.checked) selectedLabels.add(selectionKey);
           else selectedLabels.delete(selectionKey);
@@ -257,7 +257,7 @@
         });
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
         let quantityInput = null;
-        if (boxIndex === 2) {
+        if (boxIndex !== 1) {
           const quantityWrap = document.createElement('label');
           quantityWrap.className = 'print-quantity-wrap';
           quantityWrap.appendChild(document.createTextNode('จำนวนใบ'));
@@ -383,9 +383,10 @@
 
     if (printableCards.length === 0) return;
 
-    // Validate every loading-label quantity before creating any print copies.
+    // Validate quantity for every printable category before creating copies.
     for (const card of printableCards) {
-      if (Number(card.dataset.box) !== 2) continue;
+      const cardBox = Number(card.dataset.box);
+      if (cardBox === 1) continue;
       const input = card.querySelector('.print-quantity');
       const quantity = Number(input?.value ?? 1);
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 500) {
@@ -398,26 +399,27 @@
     const printCards = [];
     for (const card of printableCards) {
       const cardBox = Number(card.dataset.box);
-      if (cardBox !== 2) {
-        printCards.push(card);
-        continue;
-      }
+      if (cardBox === 1) continue;
 
       const quantity = Number(card.querySelector('.print-quantity')?.value ?? 1);
-      // Run Number starts at 0001 for each Barcode in each print command.
       for (let run = 1; run <= quantity; run++) {
         const copy = card.cloneNode(true);
         copy.dataset.printClone = 'true';
         copy.classList.add('print-target');
         copy.classList.remove('print-last');
-        const runElement = copy.querySelector('.run-number');
-        if (runElement) runElement.textContent = run + '/' + quantity;
+
+        // Only Label หน้าโหลด displays a Run Number in the footer.
+        if (cardBox === 2) {
+          const runElement = copy.querySelector('.run-number');
+          if (runElement) runElement.textContent = run + '/' + quantity;
+        }
+
         printCards.push(copy);
         card.parentElement.appendChild(copy);
       }
     }
 
-    // Keep existing single-copy print behavior for the other label categories.
+    if (printCards.length === 0) return;
     printCards.forEach(card => { card.classList.add('print-target'); card.classList.remove('print-last'); });
     printCards[printCards.length - 1].classList.add('print-last');
     printAfterFontsReady();
