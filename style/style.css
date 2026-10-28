@@ -1,3 +1,10 @@
+    @font-face {
+      font-family: "3of9";
+      src: url("../font/3of9.TTF") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+    }
+
 :root {
       font-family: Inter, "Segoe UI", Tahoma, sans-serif;
       color: #172033;
@@ -247,9 +254,9 @@
     }
 
     .line-4 {
-      font-family: "Courier New", monospace;
-      font-size: 20px;
-      font-weight: 800;
+      font-family: "3of9", sans-serif;
+      font-size: 28px;
+      font-weight: normal;
       letter-spacing: 1.2px;
       overflow-wrap: anywhere;
       border-top: 1px solid #e4e4e4;
@@ -416,7 +423,7 @@
       }
 
       .line-4 {
-        font-size: 20px;
+        font-size: 28px;
         padding-top: 2mm
       }
 
