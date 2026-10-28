@@ -128,7 +128,7 @@
       const actionCell = document.createElement('td'); actionCell.className = 'add-actions';
       const exists = boxes[boxIndex].some(item => itemKey(item) === itemKey(row));
       const button = document.createElement('button'); button.type = 'button';
-      button.className = exists ? 'secondary mini-button' : 'mini-button';
+      button.className = exists ? 'secondary mini-button added-button' : 'mini-button add-button';
       button.textContent = exists ? 'เพิ่มแล้ว' : '+ เพิ่มลง Box ' + (boxIndex + 1); button.disabled = exists;
       button.addEventListener('click', () => addToBox(row, boxIndex));
       actionCell.appendChild(button); tr.appendChild(actionCell); state.results.appendChild(tr);
@@ -186,7 +186,7 @@
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
         const printButton = document.createElement('button');
         printButton.type = 'button';
-        printButton.className = 'label-action';
+        printButton.className = 'label-action print-label-button';
         printButton.textContent = 'Print';
         printButton.addEventListener('click', () => printSingleLabel(boxIndex, itemIndex));
         const remove = document.createElement('button');
