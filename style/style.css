@@ -889,7 +889,7 @@
 }
 
 /* Keep the original label typography consistent in every Box */
-.box-items .line-1 { font-size: 24px; }
+.box-items .line-1 { font-size: 18px; }
 .box-items .line-2 { font-size: 24px; }
 .box-items .line-3 { font-size: 18px; }
 .box-items .barcode-bars { font-size: 55px; }
