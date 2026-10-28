@@ -390,9 +390,13 @@ func (a *app) manageLabelPrintList(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
+	procedureAction := req.Action
+	if procedureAction == "clearcategory" {
+		procedureAction = "delete"
+	}
 	_, err := a.db.ExecContext(ctx,
 		"EXEC [dbo].[Label_prints] @Action = @p1, @Barcode = @p2, @Category = @p3",
-		req.Action, nullableString(req.Barcode), nullableString(req.Category),
+		procedureAction, nullableString(req.Barcode), nullableString(req.Category),
 	)
 	if err != nil {
 		log.Printf("Label_prints action %q failed: %v", req.Action, err)
