@@ -1618,3 +1618,55 @@ button.secondary {
     padding-bottom: 14px !important;
   }
 }
+
+
+/* One shared line-4 / line-5 layout for every label, including Repack. */
+.box-items .label-preview .line-4 {
+  box-sizing: border-box !important;
+  flex: 0 0 auto !important;
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+  padding-top: 2px !important;
+  padding-bottom: 14px !important;
+}
+
+.box-items .label-preview .line-5.barcode-number,
+.box-items .label-preview .line-5.barcode-number-repack {
+  box-sizing: border-box !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  margin-top: 0 !important;
+  margin-bottom: 3px !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 9px !important;
+  line-height: 1.1 !important;
+  text-align: center !important;
+  letter-spacing: 10px !important;
+}
+
+@media print {
+  .box-items .queue-item.print-target .label-preview .line-4 {
+    box-sizing: border-box !important;
+    flex: 0 0 auto !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 14px !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview .line-5.barcode-number,
+  .box-items .queue-item.print-target .label-preview .line-5.barcode-number-repack {
+    box-sizing: border-box !important;
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 9px !important;
+    line-height: 1.1 !important;
+    text-align: center !important;
+    letter-spacing: 10px !important;
+  }
+}
