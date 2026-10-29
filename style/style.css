@@ -1670,3 +1670,17 @@ button.secondary {
     letter-spacing: 10px !important;
   }
 }
+
+
+/* Bring barcode line 4 closer to its readable number (line 5) on all labels. */
+.box-items .label-preview .line-4,
+.box-items .label-preview .barcode-line-repack {
+  padding-bottom: 4px !important;
+}
+
+@media print {
+  .box-items .queue-item.print-target .label-preview .line-4,
+  .box-items .queue-item.print-target .label-preview .barcode-line-repack {
+    padding-bottom: 4px !important;
+  }
+}
