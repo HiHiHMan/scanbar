@@ -1522,9 +1522,9 @@ button.secondary {
 .box-items .line-5.barcode-number {
   display: block;
   width: 100%;
-  margin-top: -8px;
+  margin-top: -16px;
   font-family: Arial, sans-serif;
-  font-size: 16px;
+  font-size: 11px;
   line-height: 1.1;
   text-align: center;
   letter-spacing: 1px;
@@ -1533,7 +1533,8 @@ button.secondary {
 @media print {
   .box-items .queue-item.print-target .line-5.barcode-number {
     display: block !important;
-    font-size: 16px !important;
+    margin-top: -16px !important;
+    font-size: 11px !important;
     line-height: 1.1 !important;
     text-align: center !important;
   }
