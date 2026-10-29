@@ -17,78 +17,96 @@ function sumByKey($array, $key)
 }
 
 $api_url = $urlAPI . '/API/Workload/WaveTotal';
-$countWaveInfo = curl_init();
-curl_setopt($countWaveInfo, CURLOPT_URL, $api_url);
-curl_setopt($countWaveInfo, CURLOPT_POST, true); 
-curl_setopt($countWaveInfo, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($countWaveInfo);
-if (curl_errno($countWaveInfo)) {
-    echo 'Error:' . curl_error($countWaveInfo);
-}
-curl_close($countWaveInfo);
+$response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
+    }
 $dataCountWaveInfo = json_decode($response, true);
 
 
 if ($reportName == 'workloadBefore') {
     $api_url = $urlAPI . '/API/Workload/SummaryBySec'; 
-    $summaryBySection = curl_init(); 
-    curl_setopt($summaryBySection, CURLOPT_URL, $api_url);
-    curl_setopt($summaryBySection, CURLOPT_POST, true);
-    curl_setopt($summaryBySection, CURLOPT_RETURNTRANSFER, true); 
-    $response = curl_exec($summaryBySection); 
-    if (curl_errno($summaryBySection)) {
-        echo 'Error: ' . curl_error($summaryBySection);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     } 
-    curl_close($summaryBySection); 
     $dataBySec = json_decode($response, true);
  
 
     $api_url = $urlAPI . '/API/Workload/BothInfo';
-    $both = curl_init();
-    curl_setopt($both, CURLOPT_URL, $api_url);
-    curl_setopt($both, CURLOPT_POST, true);
-    curl_setopt($both, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($both);
-    if (curl_errno($both)) {
-        echo 'Error:' . curl_error($both);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($both);
     $dataBoth = json_decode($response, true);
 
     $api_url = $urlAPI . '/API/Workload/SummaryByZone';
-    $summaryByZone = curl_init();
-    curl_setopt($summaryByZone, CURLOPT_URL, $api_url);
-    curl_setopt($summaryByZone, CURLOPT_POST, true);
-    curl_setopt($summaryByZone, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($summaryByZone);
-    if (curl_errno($summaryByZone)) {
-        echo 'Error:' . curl_error($summaryByZone);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($summaryByZone);
     $dataByZone = json_decode($response, true);
 
     $api_url = $urlAPI . '/API/Workload/PickTotal';
-    $countPickpackBreakNFull = curl_init();
-    curl_setopt($countPickpackBreakNFull, CURLOPT_URL, $api_url);
-    curl_setopt($countPickpackBreakNFull, CURLOPT_POST, true);
-    curl_setopt($countPickpackBreakNFull, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($countPickpackBreakNFull);
-    if (curl_errno($countPickpackBreakNFull)) {
-        echo 'Error:' . curl_error($countPickpackBreakNFull);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($countPickpackBreakNFull);
     $dataBCPickpack = json_decode($response, true);
 
     $api_url = $urlAPI . '/API/Workload/MaxCap';
-    $MaxCap = curl_init();
-    curl_setopt($MaxCap, CURLOPT_URL, $api_url);
-    curl_setopt($MaxCap, CURLOPT_POST, true);
-    curl_setopt($MaxCap, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($MaxCap);
-    if (curl_errno($MaxCap)) {
-        echo 'Error:' . curl_error($MaxCap);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($MaxCap);
     $dataMaxCap = json_decode($response, true);
     $BCMaxCap = 0;
     $FullMaxCap = 0;
@@ -504,27 +522,33 @@ if ($reportName == 'workloadBefore') {
     }
 } else if ($reportName == 'workloadDelivery') {
     $api_url = $urlAPI . '/API/Workload/WLDeliBySec';
-    $DeliBySec = curl_init();
-    curl_setopt($DeliBySec, CURLOPT_URL, $api_url);
-    curl_setopt($DeliBySec, CURLOPT_POST, true);
-    curl_setopt($DeliBySec, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($DeliBySec);
-    if (curl_errno($DeliBySec)) {
-        echo 'Error:' . curl_error($DeliBySec);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($DeliBySec);
     $dataDeliBySec = json_decode($response, true);
 
     $api_url = $urlAPI . '/API/Workload/WLDeliByType';
-    $DeliByType = curl_init();
-    curl_setopt($DeliByType, CURLOPT_URL, $api_url);
-    curl_setopt($DeliByType, CURLOPT_POST, true);
-    curl_setopt($DeliByType, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($DeliByType);
-    if (curl_errno($DeliByType)) {
-        echo 'Error:' . curl_error($DeliByType);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($DeliByType);
     $dataDeliByType = json_decode($response, true);
 
     $sumUscStoreBySec = 0;
@@ -718,15 +742,18 @@ if ($reportName == 'workloadBefore') {
 } else if ($reportName == 'byWaveBefore') {
 
     $api_url = $urlAPI . '/API/Workload/ReportByWave';
-    $rp18bywave = curl_init();
-    curl_setopt($rp18bywave, CURLOPT_URL, $api_url);
-    curl_setopt($rp18bywave, CURLOPT_POST, true);
-    curl_setopt($rp18bywave, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($rp18bywave);
-    if (curl_errno($rp18bywave)) {
-        echo 'Error:' . curl_error($rp18bywave);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($rp18bywave);
     $dataBywave = json_decode($response, true);
 
 
@@ -820,15 +847,18 @@ if ($reportName == 'workloadBefore') {
 } else if ($reportName == 'workloadAfter') {
 
     $api_url = $urlAPI . '/API/Workload/ReportRP18After';
-    $rp18bSectionAfter = curl_init();
-    curl_setopt($rp18bSectionAfter, CURLOPT_URL, $api_url);
-    curl_setopt($rp18bSectionAfter, CURLOPT_POST, true);
-    curl_setopt($rp18bSectionAfter, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($rp18bSectionAfter);
-    if (curl_errno($rp18bSectionAfter)) {
-        echo 'Error:' . curl_error($rp18bSectionAfter);
+    $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
     }
-    curl_close($rp18bSectionAfter);
     $dataBySectionAfter = json_decode($response, true);
 
     if ($dataBySectionAfter === null) {
@@ -924,15 +954,18 @@ if ($reportName == 'workloadBefore') {
 } else if ($reportName == 'workloadAfterDeli') {
 
     // $api_url = $urlAPI . '/api/reportRP18/rp18DeliAfterbySection';
-    // $rp18bSectionAfter = curl_init();
-    // curl_setopt($rp18bSectionAfter, CURLOPT_URL, $api_url);
-    // curl_setopt($rp18bSectionAfter, CURLOPT_POST, true);
-    // curl_setopt($rp18bSectionAfter, CURLOPT_RETURNTRANSFER, true);
-    // $response = curl_exec($rp18bSectionAfter);
-    // if (curl_errno($rp18bSectionAfter)) {
-    //     echo 'Error:' . curl_error($rp18bSectionAfter);
-    // }
-    // curl_close($rp18bSectionAfter);
+    // $response = @file_get_contents($api_url, false, stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Length: 0\r\n",
+            'timeout' => 15,
+            'ignore_errors' => true
+        ]
+    ]));
+    if ($response === false) {
+        echo 'Error: Unable to connect to API: ' . $api_url;
+        $response = '';
+    }
     // $dataBySectionAfter = json_decode($response, true);
 
     // if ($dataBySectionAfter === null) {
