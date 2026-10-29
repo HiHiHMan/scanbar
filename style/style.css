@@ -1556,3 +1556,49 @@ button.secondary {
     margin-bottom: 3px !important;
   }
 }
+
+
+/* Unified spacing for barcode, readable number, and footer on every label. */
+.box-items .label-preview .line-4 {
+  margin-bottom: 0 !important;
+  padding-top: 2px !important;
+}
+
+.box-items .label-preview .line-5.barcode-number {
+  margin-top: -16px !important;
+  margin-bottom: 3px !important;
+}
+
+.box-items .label-preview .line-5.barcode-number-repack {
+  margin-top: 0 !important;
+  margin-bottom: 3px !important;
+}
+
+.box-items .label-preview .label-footer {
+  margin-top: 2px !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+}
+
+@media print {
+  .box-items .queue-item.print-target .label-preview .line-4 {
+    margin-bottom: 0 !important;
+    padding-top: 2px !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview .line-5.barcode-number {
+    margin-top: -16px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview .line-5.barcode-number-repack {
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview .label-footer {
+    margin-top: 2px !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+  }
+}
