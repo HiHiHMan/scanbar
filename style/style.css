@@ -34,14 +34,15 @@ body {
   flex-wrap: wrap;
 }
 
-.topbar .brand,
 .topbar .status,
 .topbar .topbar-actions button {
   box-shadow: 0 5px 22px rgb(73 52 47 / 14%);
 }
 
 .topbar .brand {
-  text-shadow: 0 2px 5px rgb(73 52 47 / 35%);
+  color: #332c29;
+  text-shadow: none;
+  box-shadow: none;
 }
 
 .brand {
