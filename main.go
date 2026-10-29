@@ -431,3 +431,9 @@ func securityHeaders(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func main() {
+	if err := runService(); err != nil {
+		log.Fatalf("BarLabel stopped: %v", err)
+	}
+}
