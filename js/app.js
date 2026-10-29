@@ -130,8 +130,14 @@
     barcodeLine.className = 'label-line line-4';
     const barcodeBars = document.createElement('div');
     barcodeBars.className = 'barcode-bars';
-    barcodeBars.textContent = '*' + data.barcode.replace(/^\*+|\*+$/g, '') + '*';
+    const cleanBarcode = data.barcode.replace(/^\*+|\*+$/g, '');
+    barcodeBars.textContent = '*' + cleanBarcode + '*';
     barcodeLine.appendChild(barcodeBars);
+
+    const barcodeNumber = document.createElement('div');
+    barcodeNumber.className = 'barcode-number';
+    barcodeNumber.textContent = cleanBarcode;
+    barcodeLine.appendChild(barcodeNumber);
     preview.appendChild(barcodeLine);
 
     if (boxIndex === 2) {
