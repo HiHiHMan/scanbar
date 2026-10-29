@@ -1500,13 +1500,13 @@ button.secondary {
 
 /* Barcode: compress width and increase bar height in preview and print. */
 .box-items .barcode-bars {
-  transform: scaleX(0.78) scaleY(1.95);
+  transform: scaleX(0.78) scaleY(2.5);
   transform-origin: center center;
 }
 
 @media print {
   .box-items .queue-item.print-target .barcode-bars {
-    transform: scaleX(0.78) scaleY(1.95) !important;
+    transform: scaleX(0.78) scaleY(2.5) !important;
     transform-origin: center center !important;
   }
 }
