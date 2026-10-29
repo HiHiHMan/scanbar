@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -11,10 +10,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
+	"sync"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
+	"github.com/kardianos/service"
 	_ "github.com/microsoft/go-mssqldb"
 )
 
@@ -117,38 +120,15 @@ func urlQueryEscape(value string) string {
 	return url.QueryEscape(value)
 }
 
-// loadEnvFile loads KEY=VALUE settings without overwriting existing OS environment variables.
-// Keep .env out of Git; commit only .env.example.
+// loadEnvFile loads optional environment settings without overriding existing OS variables.
 func loadEnvFile(path string) error {
-	file, err := os.Open(path)
-	if err != nil {
+	if _, err := os.Stat(path); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
-			return nil // .env is optional; system environment variables can be used instead.
+			return nil
 		}
 		return err
 	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") {
-			continue
-		}
-		key, value, ok := strings.Cut(line, "=")
-		if !ok {
-			continue
-		}
-		key = strings.TrimSpace(key)
-		value = strings.TrimSpace(value)
-		value = strings.Trim(value, "\\\"'")
-		if key != "" && os.Getenv(key) == "" {
-			if err := os.Setenv(key, value); err != nil {
-				return err
-			}
-		}
-	}
-	return scanner.Err()
+	return godotenv.Load(path)
 }
 
 func env(key, fallback string) string {
@@ -432,8 +412,92 @@ func securityHeaders(next http.Handler) http.Handler {
 	})
 }
 
+type barLabelProgram struct {
+	mu     sync.Mutex
+	server *http.Server
+	db     *sql.DB
+}
+
+func (p *barLabelProgram) Start(s service.Service) error {
+	if err := setWorkingDirectory(); err != nil {
+		return fmt.Errorf("set working directory: %w", err)
+	}
+
+	server, db, err := buildServer()
+	if err != nil {
+		return err
+	}
+
+	p.mu.Lock()
+	p.server = server
+	p.db = db
+	p.mu.Unlock()
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("BarLabel HTTP server stopped unexpectedly: %v", err)
+		}
+	}()
+	return nil
+}
+
+func (p *barLabelProgram) Stop(s service.Service) error {
+	p.mu.Lock()
+	server, db := p.server, p.db
+	p.server, p.db = nil, nil
+	p.mu.Unlock()
+	return shutdownApplication(server, db)
+}
+
 func main() {
-	if err := runService(); err != nil {
+	// Load .env from the launch directory first, then from beside the executable.
+	if err := loadEnvFile(".env"); err != nil {
+		log.Fatalf("load .env: %v", err)
+	}
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatalf("resolve executable path: %v", err)
+	}
+	exeDir := filepath.Dir(exePath)
+	if err := loadEnvFile(filepath.Join(exeDir, ".env")); err != nil {
+		log.Fatalf("load .env beside executable: %v", err)
+	}
+
+	svcConfig := &service.Config{
+		Name:        "BarLabel",
+		DisplayName: "BarLabel",
+		Description: "BarLabel HTTP API for SQL Server",
+	}
+	svc, err := service.New(&barLabelProgram{}, svcConfig)
+	if err != nil {
+		log.Fatalf("create Windows service: %v", err)
+	}
+
+	if len(os.Args) > 1 {
+		var actionErr error
+		switch strings.ToLower(os.Args[1]) {
+		case "install":
+			actionErr = svc.Install()
+		case "uninstall":
+			actionErr = svc.Uninstall()
+		case "start":
+			actionErr = svc.Start()
+		case "stop":
+			actionErr = svc.Stop()
+		default:
+			if err := svc.Run(); err != nil {
+				log.Fatalf("BarLabel stopped: %v", err)
+			}
+			return
+		}
+		if actionErr != nil {
+			log.Fatalf("service command %q failed: %v", os.Args[1], actionErr)
+		}
+		log.Printf("service command %q completed", os.Args[1])
+		return
+	}
+
+	if err := svc.Run(); err != nil {
 		log.Fatalf("BarLabel stopped: %v", err)
 	}
 }
