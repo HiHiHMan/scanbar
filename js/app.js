@@ -51,7 +51,7 @@
       const line = document.createElement('div');
     line.className = 'label-line ' + className;
     const caption = document.createElement('span');
-    caption.className = 'Label.field-name';
+    caption.className = 'field-name';
     caption.textContent = label;
     line.append(caption, document.createTextNode(text));
     return line;
