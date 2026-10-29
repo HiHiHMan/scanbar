@@ -373,9 +373,9 @@ func (a *app) manageLabelPrintList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]any{
-		"status": "success",
-		"action": req.Action,
-		"barcode": req.Barcode,
+		"status":   "success",
+		"action":   req.Action,
+		"barcode":  req.Barcode,
 		"category": req.Category,
 	})
 }

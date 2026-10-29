@@ -3,23 +3,46 @@ package main
 import (
 	"context"
 	"database/sql"
-	_ "embed" // บังคับใช้งานร่วมกับ go:embed
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 
-	_ "github.com/denisenkom/go-mssqldb"
+	_ "github.com/microsoft/go-mssqldb"
 	"github.com/joho/godotenv"
 	"github.com/kardianos/service"
-	"github.com/xuri/excelize/v2" // เพิ่มตัวนี้เข้ามาเพื่อใช้งานเปิดไฟล์
 )
 
-//go:embed templates/index.html
-var indexHTML []byte
+// Settings: edit these defaults here, or override them with values in the local conf.env file.
+var (
+	defaultDBHost     = "192.168.123.45"
+	defaultDBPort     = "1433"
+	defaultDBName     = "Inventory"
+	defaultDBUser     = "" // Prefer setting DB_USER in conf.env
+	defaultDBPassword = "" // Prefer setting DB_PASSWORD in conf.env
+	defaultAPIAddr    = ":8080"
+)
 
-type program struct{}
+type app struct {
+	db *sql.DB
+}
+
+type apiError struct {
+	Error string `json:"error"`
+}
+
+// program implements service.Interface for Windows Service management.
+type program struct {
+	server *http.Server
+	db     *sql.DB
+}
 
 func (p *program) Start(s service.Service) error {
 	go p.run()
@@ -27,24 +50,56 @@ func (p *program) Start(s service.Service) error {
 }
 
 func (p *program) run() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8130" // ค่า Default ป้องกันกรณีหาค่าไม่ได้
+	addr := env("API_ADDR", defaultAPIAddr)
+	db, err := openDatabase()
+	if err != nil {
+		log.Fatalf("database configuration error: %v", err)
+	}
+	p.db = db
+
+	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
+	defer cancel()
+	if err := db.PingContext(ctx); err != nil {
+		log.Fatalf("cannot connect to SQL Server: %v", err)
 	}
 
-	http.HandleFunc("/", handleIndex)
-	http.HandleFunc("/run", handleRunProcess)
+	a := &app{db: db}
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/health", a.health)
+	mux.HandleFunc("GET /api/labels", a.labels)
+	mux.HandleFunc("GET /api/labels/search", a.searchLabels)
+	mux.HandleFunc("GET /api/label-print-list", a.labelPrintList)
+	mux.HandleFunc("POST /api/label-print-list", a.manageLabelPrintList)
+	mux.Handle("GET /style/", http.StripPrefix("/style/", http.FileServer(http.Dir("style"))))
+	mux.Handle("GET /js/", http.StripPrefix("/js/", http.FileServer(http.Dir("js"))))
+	mux.Handle("GET /font/", http.StripPrefix("/font/", http.FileServer(http.Dir("font"))))
+	mux.HandleFunc("GET /", serveIndex)
 
-	log.Printf("Server Start Port %s", port)
+	p.server = &http.Server{
+		Addr:              addr,
+		Handler:           securityHeaders(mux),
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
 
-	err := http.ListenAndServe(":"+port, nil)
-	if err != nil {
-		log.Fatal(err)
+	log.Printf("Scanbar running at http://localhost%s", addr)
+	if err := p.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("HTTP server error: %v", err)
 	}
 }
 
 func (p *program) Stop(s service.Service) error {
-	log.Println("Service Stopped")
+	if p.server != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = p.server.Shutdown(ctx)
+	}
+	if p.db != nil {
+		_ = p.db.Close()
+	}
+	log.Println("Scanbar service stopped.")
 	return nil
 }
 
@@ -55,28 +110,25 @@ func main() {
 	// 2. จัดการเรื่อง Path ของไฟล์ .exe และโหลด conf.env จากโฟลเดอร์เดียวกัน (สำหรับตอนรันจริง / Service)
 	if ex, err := os.Executable(); err == nil {
 		exeDir := filepath.Dir(ex)
-		
 		envPath := filepath.Join(exeDir, "conf.env")
 		if err := godotenv.Load(envPath); err == nil {
 			log.Printf("โหลดไฟล์ conf.env สำเร็จจากพาธ: %s", envPath)
 		}
-		
 		os.Chdir(exeDir)
 	}
 
-	// เช็คและกำหนดค่าพอร์ตให้เป็น 8130 ตามที่คุณต้องการ
-	if os.Getenv("PORT") == "" {
-		os.Setenv("PORT", "8130")
+	// เช็คและกำหนดค่าพอร์ต API_ADDR หากยังไม่ได้กำหนด
+	if os.Getenv("API_ADDR") == "" {
+		os.Setenv("API_ADDR", defaultAPIAddr)
 	}
 
 	svcConfig := &service.Config{
-		Name:        "Port8130_Parcel_Import",
-		DisplayName: "Port:8130-Parcel Import Service",
-		Description: "Parcel CSV Import Service to SQL Server",
+		Name:        "Port4071_ScanBarService",
+		DisplayName: "Port:4071-ScanBar Web Service",
+		Description: "Port:4071-Inventory and Label Printing Web Service.",
 	}
 
 	prg := &program{}
-
 	s, err := service.New(prg, svcConfig)
 	if err != nil {
 		log.Fatal(err)
@@ -92,7 +144,7 @@ func main() {
 			fmt.Println("Service Installed Successfully")
 			return
 
-		case "uninstall":
+		case "uninstall", "remove":
 			err = s.Uninstall()
 			if err != nil {
 				log.Fatal(err)
@@ -124,166 +176,317 @@ func main() {
 	}
 }
 
-// แสดงหน้าเว็บ index.html (ถ้ามี)
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write(indexHTML)
-}
-
-// ฟังก์ชันหลักที่ทำงานเมื่อเรียกผ่าน API /run
-func handleRunProcess(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+func openDatabase() (*sql.DB, error) {
+	host := strings.TrimSpace(env("DB_HOST", defaultDBHost))
+	portText := env("DB_PORT", defaultDBPort)
+	port, err := strconv.Atoi(portText)
+	if err != nil || port < 1 || port > 65535 {
+		return nil, errors.New("DB_PORT must be a valid TCP port")
+	}
+	database := strings.TrimSpace(env("DB_NAME", defaultDBName))
+	user := env("DB_USER", defaultDBUser)
+	password := env("DB_PASSWORD", defaultDBPassword)
+	if user == "" || password == "" {
+		return nil, errors.New("set DB_USER and DB_PASSWORD environment variables")
 	}
 
-	// // อ่านค่าจาก conf.env
-	// dbServer := os.Getenv("DBSERVER")
-	// dbPort := os.Getenv("DBPORT")
-	// dbUser := os.Getenv("DBUSER")
-	// dbPassword := os.Getenv("DBPASSWORD")
-	// dbName := os.Getenv("DB_NAME")
-
-	// อ่านค่าจาก conf.env พร้อมกำหนดค่า Default เผื่อกรณีตัวแปรว่าง
-	dbServer := os.Getenv("DBSERVER")
-	if dbServer == "" {
-		dbServer = "192.168.101.239"
-	}
-
-	dbPort := os.Getenv("DBPORT")
-	if dbPort == "" {
-		dbPort = "1433" // กำหนด Port เริ่มต้นของ SQL Server
-	}
-
-	dbUser := os.Getenv("DBUSER")
-	if dbUser == "" {
-		dbUser = "monitor"
-	}
-
-	dbPassword := os.Getenv("DBPASSWORD")
-	if dbPassword == "" {
-		dbPassword = "iloveyou"
-	}
-
-	dbName := os.Getenv("DB_NAME")
-	if dbName == "" {
-		dbName = "InboundTransport"
-	}
-
-	// เปิดไฟล์จาก Network Share (ใช้ excelize เปิดแทน csv เพื่อรองรับรูปแบบที่ปะปน)
-	filePath := `\\192.168.101.239\DataDashboard\InboundTransport\fileToUpload\parcel.csv`
-	
-	f, err := excelize.OpenFile(filePath)
-	if err != nil {
-		log.Printf("ไม่สามารถเปิดไฟล์ได้: %v", err)
-		http.Error(w, fmt.Sprintf("ไม่สามารถเปิดไฟล์ได้: %v", err), http.StatusInternalServerError)
-		return
-	}
-	defer f.Close()
-
-	// ดึงชื่อชีทแรกของไฟล์มาอ่าน
-	sheets := f.GetSheetList()
-	if len(sheets) == 0 {
-		http.Error(w, "ไม่พบชีทข้อมูลในไฟล์", http.StatusBadRequest)
-		return
-	}
-	
-	rows, err := f.GetRows(sheets[0])
-	if err != nil {
-		http.Error(w, fmt.Sprintf("ไม่สามารถอ่านข้อมูลจากชีทได้: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	if len(rows) == 0 {
-		http.Error(w, "ไม่พบข้อมูลในไฟล์", http.StatusBadRequest)
-		return
-	}
-
-	header := rows[0]
-	dataRows := rows[1:]
-
-	// เชื่อมต่อ SQL Server
-	connString := fmt.Sprintf("server=%s;port=%s;user id=%s;password=%s;database=%s;encrypt=true;trustservercertificate=true;",
-		dbServer, dbPort, dbUser, dbPassword, dbName)
-
+	connString := fmt.Sprintf("sqlserver://%s:%s@%s:%d?database=%s&encrypt=true&TrustServerCertificate=true",
+		urlEscape(user), urlEscape(password), host, port, urlEscape(database))
 	db, err := sql.Open("sqlserver", connString)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("ไม่สามารถเชื่อมต่อฐานข้อมูลได้: %v", err), http.StatusInternalServerError)
+		return nil, fmt.Errorf("open SQL Server connection: %w", err)
+	}
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	return db, nil
+}
+
+func urlEscape(value string) string {
+	return strings.ReplaceAll(urlQueryEscape(value), "+", "%20")
+}
+
+func urlQueryEscape(value string) string {
+	return url.QueryEscape(value)
+}
+
+func env(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
+}
+
+func (a *app) health(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+	defer cancel()
+	if err := a.db.PingContext(ctx); err != nil {
+		writeJSON(w, http.StatusServiceUnavailable, apiError{Error: "database unavailable"})
 		return
 	}
-	defer db.Close()
+	writeJSON(w, http.StatusOK, map[string]string{"status": "ok", "database": "connected"})
+}
 
-	ctx := context.Background()
-	if err := db.PingContext(ctx); err != nil {
-		http.Error(w, fmt.Sprintf("เชื่อมต่อฐานข้อมูลไม่สำเร็จ: %v", err), http.StatusInternalServerError)
-		return
-	}
+func (a *app) labels(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
 
-	// ใช้ Transaction
-	tx, err := db.BeginTx(ctx, nil)
+	rows, err := a.db.QueryContext(ctx,
+		"EXEC [dbo].[Label_prints] @Action = @p1",
+		"getlabels",
+	)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("ไม่สามารถเริ่ม Transaction ได้: %v", err), http.StatusInternalServerError)
+		log.Printf("query labels failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read label records; check database permissions and table schema"})
 		return
 	}
-	defer tx.Rollback()
+	defer rows.Close()
 
-	// ลบตารางเก่า (Temp_Parcel)
-	_, err = tx.ExecContext(ctx, "IF OBJECT_ID('Temp_Parcel', 'U') IS NOT NULL DROP TABLE Temp_Parcel;")
+	columns, err := rows.Columns()
 	if err != nil {
-		http.Error(w, fmt.Sprintf("ไม่สามารถลบตารางเก่าได้: %v", err), http.StatusInternalServerError)
+		log.Printf("read columns failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read table columns"})
 		return
 	}
 
-	// สร้างตารางใหม่ Temp_Parcel
-	createTableQuery := "CREATE TABLE Temp_Parcel ("
-	for i, colName := range header {
-		safeColName := fmt.Sprintf("[Col_%d]", i+1)
-		if colName != "" {
-			safeColName = fmt.Sprintf("[%s]", colName)
+	data := make([]map[string]any, 0)
+	for rows.Next() {
+		values := make([]any, len(columns))
+		dest := make([]any, len(columns))
+		for i := range values {
+			dest[i] = &values[i]
 		}
-		createTableQuery += fmt.Sprintf("%s NVARCHAR(MAX) NULL", safeColName)
-		if i < len(header)-1 {
-			createTableQuery += ", "
+		if err := rows.Scan(dest...); err != nil {
+			log.Printf("scan label row failed: %v", err)
+			writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read a label record"})
+			return
 		}
-	}
-	createTableQuery += ");"
 
-    _, err = tx.ExecContext(ctx, createTableQuery)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("ไม่สามารถสร้างตารางใหม่ได้: %v", err), http.StatusInternalServerError)
-		return
-	}
-
-	// Insert ข้อมูลทีละแถว
-	for _, row := range dataRows {
-		insertQuery := "INSERT INTO Temp_Parcel VALUES ("
-		vals := []interface{}{}
-		for i := range header {
-			insertQuery += fmt.Sprintf("@p%d", i+1)
-			if i < len(header)-1 {
-				insertQuery += ", "
+		item := make(map[string]any, len(columns))
+		for i, column := range columns {
+			value := values[i]
+			if bytes, ok := value.([]byte); ok {
+				value = string(bytes)
 			}
-
-			var val interface{} = ""
-			if i < len(row) {
-				val = row[i]
-			}
-			vals = append(vals, val)
+			item[column] = value
 		}
-		insertQuery += ");"
-
-		_, err = tx.ExecContext(ctx, insertQuery, vals...)
-		if err != nil {
-			log.Printf("เกิดข้อผิดพลาดในการ Insert แถว: %v", err)
-		}
+		data = append(data, item)
 	}
-
-	// Commit Transaction
-	if err := tx.Commit(); err != nil {
-		http.Error(w, fmt.Sprintf("Commit Transaction ไม่สำเร็จ: %v", err), http.StatusInternalServerError)
+	if err := rows.Err(); err != nil {
+		log.Printf("iterate label rows failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed while reading label records"})
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprint(w, "นำเข้าข้อมูลลง Temp_Parcel สำเร็จเรียบร้อยแล้ว!")
+	writeJSON(w, http.StatusOK, map[string]any{
+		"count": len(data),
+		"data":  data,
+	})
+}
+
+func (a *app) searchLabels(w http.ResponseWriter, r *http.Request) {
+	productID := strings.TrimSpace(r.URL.Query().Get("productID"))
+	if productID == "" {
+		writeJSON(w, http.StatusBadRequest, apiError{Error: "productID query parameter is required"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	rows, err := a.db.QueryContext(ctx,
+		"EXEC [dbo].[Label_prints] @Action = @p1, @ProductID = @p2",
+		"searchlabels",
+		productID,
+	)
+	if err != nil {
+		log.Printf("search labels by productID failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to search label records; check productID column and database permissions"})
+		return
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		log.Printf("read search result columns failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read search result columns"})
+		return
+	}
+
+	data := make([]map[string]any, 0)
+	for rows.Next() {
+		values := make([]any, len(columns))
+		dest := make([]any, len(columns))
+		for i := range values {
+			dest[i] = &values[i]
+		}
+		if err := rows.Scan(dest...); err != nil {
+			log.Printf("scan search result row failed: %v", err)
+			writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read a search result"})
+			return
+		}
+
+		item := make(map[string]any, len(columns))
+		for i, column := range columns {
+			value := values[i]
+			if bytes, ok := value.([]byte); ok {
+				value = string(bytes)
+			}
+			item[column] = value
+		}
+		data = append(data, item)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("iterate search results failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed while searching label records"})
+		return
+	}
+	if len(data) == 0 {
+		writeJSON(w, http.StatusNotFound, apiError{Error: "no label records found for this productID"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"count": len(data),
+		"data":  data,
+	})
+}
+
+func (a *app) labelPrintList(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+	defer cancel()
+
+	rows, err := a.db.QueryContext(ctx,
+		"EXEC [dbo].[Label_prints] @Action = @p1",
+		"getprintlist",
+	)
+	if err != nil {
+		log.Printf("read label print list failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read saved Box items"})
+		return
+	}
+	defer rows.Close()
+
+	data := make([]map[string]any, 0)
+	for rows.Next() {
+		var barcode, category sql.NullString
+		var createdAt any
+		var productID, description, barcodeNo, location, psize1, psize2, psize3 sql.NullString
+		if err := rows.Scan(&barcode, &category, &createdAt, &productID, &description, &barcodeNo, &location, &psize1, &psize2, &psize3); err != nil {
+			log.Printf("scan label print list failed: %v", err)
+			writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read a saved Box item"})
+			return
+		}
+		data = append(data, map[string]any{
+			"Barcode": barcode.String, "Category": category.String, "CreateAt": createdAt,
+			"ProductID": productID.String, "Description": description.String, "BarcodeNo": barcodeNo.String,
+			"Location": location.String, "PSize1": psize1.String, "PSize2": psize2.String, "PSize3": psize3.String,
+		})
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("iterate label print list failed: %v", err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed while reading saved Box items"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"count": len(data), "data": data})
+}
+
+type labelPrintListRequest struct {
+	Action   string `json:"action"`
+	Barcode  string `json:"barcode"`
+	Category string `json:"category"`
+}
+
+func (a *app) manageLabelPrintList(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
+	var req labelPrintListRequest
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&req); err != nil {
+		writeJSON(w, http.StatusBadRequest, apiError{Error: "invalid JSON request body"})
+		return
+	}
+
+	req.Action = strings.ToLower(strings.TrimSpace(req.Action))
+	req.Barcode = strings.TrimSpace(req.Barcode)
+	req.Category = strings.TrimSpace(req.Category)
+	validCategories := map[string]bool{"Label Repack": true, "Label ประตูรับ": true, "Label หน้าโหลด": true}
+
+	switch req.Action {
+	case "insert":
+		if req.Barcode == "" || !validCategories[req.Category] {
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "barcode and a valid category (Label Repack, Label ประตูรับ, Label หน้าโหลด) are required"})
+			return
+		}
+	case "delete":
+		if req.Barcode == "" || !validCategories[req.Category] {
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "barcode and category are required to remove one item"})
+			return
+		}
+	case "clearcategory":
+		if !validCategories[req.Category] {
+			writeJSON(w, http.StatusBadRequest, apiError{Error: "a valid category (Label Repack, Label ประตูรับ, Label หน้าโหลด) is required"})
+			return
+		}
+	case "builddata":
+		// No additional parameters required.
+	default:
+		writeJSON(w, http.StatusBadRequest, apiError{Error: "action must be insert, delete, clearCategory, or buildData"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
+	defer cancel()
+	procedureAction := req.Action
+	if procedureAction == "clearcategory" {
+		procedureAction = "delete"
+	}
+	_, err := a.db.ExecContext(ctx,
+		"EXEC [dbo].[Label_prints] @Action = @p1, @Barcode = @p2, @Category = @p3",
+		procedureAction, nullableString(req.Barcode), nullableString(req.Category),
+	)
+	if err != nil {
+		log.Printf("Label_prints action %q failed: %v", req.Action, err)
+		writeJSON(w, http.StatusInternalServerError, apiError{Error: "stored procedure failed; check dbo.Label_prints parameters and SQL Server logs"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":   "success",
+		"action":   req.Action,
+		"barcode":  req.Barcode,
+		"category": req.Category,
+	})
+}
+
+func nullableString(value string) any {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	return value
+}
+
+func serveIndex(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+	http.ServeFile(w, r, "index.html")
+}
+
+func writeJSON(w http.ResponseWriter, status int, value any) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(value); err != nil {
+		log.Printf("write JSON response failed: %v", err)
+	}
+}
+
+func securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("Referrer-Policy", "no-referrer")
+		next.ServeHTTP(w, r)
+	})
 }
