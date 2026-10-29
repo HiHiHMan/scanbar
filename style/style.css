@@ -32,9 +32,16 @@ body {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  background: #49342f;
+}
+
+.topbar .brand,
+.topbar .status,
+.topbar .topbar-actions button {
   box-shadow: 0 5px 22px rgb(73 52 47 / 14%);
-  border-bottom: 2px solid #bd6842;
+}
+
+.topbar .brand {
+  text-shadow: 0 2px 5px rgb(73 52 47 / 35%);
 }
 
 .brand {
