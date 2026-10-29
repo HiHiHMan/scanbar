@@ -1,22 +1,35 @@
  
 <?php
+// เรียก API โดยไม่ใช้ cURL
+function fetchApiResponse($url)
+{
+    $options = [
+        'http' => [
+            'method'        => 'GET',
+            'header'        => "Accept: application/json\\r\\n",
+            'timeout'       => 15,
+            'ignore_errors' => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = @file_get_contents($url, false, $context);
+
+    if ($response === false) {
+        error_log('API request failed: ' . $url);
+        echo 'Error: ไม่สามารถเชื่อมต่อ API ได้';
+        return false;
+    }
+
+    return $response;
+}
+
 
 $urlAPI_Option = 'http://192.168.248.20:5003';
 
 $api_url_Option = $urlAPI_Option . '/api/cdc/hygiene/selections';
 
-$dataCurl_Option = curl_init();
-
-curl_setopt($dataCurl_Option, CURLOPT_URL, $api_url_Option);
-curl_setopt($dataCurl_Option, CURLOPT_RETURNTRANSFER, true);
-
-$response_Option = curl_exec($dataCurl_Option);
-
-if (curl_errno($dataCurl_Option)) {
-    echo 'Error: ' . curl_error($dataCurl_Option);
-}
-
-curl_close($dataCurl_Option);
+$response_Option = fetchApiResponse($api_url_Option);
 
 $data_Option = json_decode($response_Option, true);
 
@@ -70,14 +83,7 @@ function formatText(string $text, array $data_Option, string $col): ?string
 $urlAPI = 'http://192.168.248.20:5003';
 
 $api_url = $urlAPI . '/api/cdc/hygiene/reportTruck';
-$dataCurl = curl_init();
-curl_setopt($dataCurl, CURLOPT_URL, $api_url);
-curl_setopt($dataCurl, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($dataCurl);
-if (curl_errno($dataCurl)) {
-    echo 'Error:' . curl_error($dataCurl);
-}
-curl_close($dataCurl);
+$response = fetchApiResponse($api_url);
 $data = json_decode($response, true);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
