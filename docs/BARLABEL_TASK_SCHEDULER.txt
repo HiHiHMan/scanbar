@@ -1,37 +1,3 @@
-BarLabel - ตั้งค่าให้เปิดอัตโนมัติด้วย Task Scheduler
-====================================================
-
-ไฟล์โปรแกรม:
-D:\Golang\scanbar\barLabel.exe
-
-วิธีนี้ใช้ Task Scheduler ที่มีอยู่ใน Windows ไม่ต้องติดตั้ง NSSM
-หมายเหตุ: เป็น Scheduled Task ไม่ใช่ Windows Service จริง
-
-วิธีที่แนะนำ (ตั้งค่า Working directory ได้)
---------------------------------------------
-
-1. กด Win + R พิมพ์ taskschd.msc แล้วกด Enter
-2. เลือก Create Task... (ไม่ใช่ Create Basic Task)
-3. แท็บ General:
-   - Name: BarLabel
-   - เลือก Run whether user is logged on or not
-   - หากจำเป็นต้องใช้สิทธิ์สูง ให้เลือก Run with highest privileges
-   - เลือกบัญชีผู้ใช้ที่มีสิทธิ์เข้าถึง SQL Server และไฟล์โปรแกรม
-4. แท็บ Triggers:
-   - กด New...
-   - Begin the task: At startup
-   - กด OK
-5. แท็บ Actions:
-   - กด New...
-   - Action: Start a program
-   - Program/script: D:\Golang\scanbar\barLabel.exe
-   - Start in (optional): D:\Golang\scanbar
-   - กด OK
-6. แท็บ Conditions:
-   - หากไม่ต้องการให้ขึ้นกับไฟ AC ให้เอาเครื่องหมายเลือกเงื่อนไขพลังงานออกตามต้องการ
-7. กด OK และกรอกรหัสผ่านบัญชี หาก Windows ขอ
-8. คลิกขวา Task ชื่อ BarLabel แล้วเลือก Run เพื่อทดสอบ
-
 คำสั่ง CMD (สร้าง Task แบบพื้นฐาน)
 -----------------------------------
 
@@ -52,16 +18,4 @@ schtasks /end /tn "BarLabel"
 ลบ Task:
 
 schtasks /delete /tn "BarLabel" /f
-
-ข้อควรระวัง
------------
-
-- คำสั่ง CMD ด้านบนใช้บัญชี SYSTEM และไม่ได้กำหนด Working directory ผ่าน schtasks
-  หากโปรแกรมอ่านไฟล์ .env, index.html, style, js หรือ font ด้วย path แบบ relative
-  ให้ใช้วิธี GUI ด้านบนและตั้งค่า Start in เป็น D:\Golang\scanbar
-- หาก SQL Server ใช้ Windows Authentication บัญชี SYSTEM อาจไม่มีสิทธิ์เข้าฐานข้อมูล
-  ให้ใช้บัญชี Windows ที่ได้รับอนุญาต แทนการใช้ SYSTEM
-- หากใช้ SQL Login ให้ตรวจสอบว่าไฟล์ .env อยู่ในตำแหน่งที่โปรแกรมอ่านจริง และมีค่าที่จำเป็น
-- หลังตั้งค่าแล้ว ทดสอบเว็บจากเครื่องเดียวกัน เช่น http://localhost:8080
-- หาก Task แสดงสถานะ Running แต่เว็บเข้าไม่ได้ ให้ตรวจสอบ log ของโปรแกรม, port ที่ใช้งาน,
-  path ของไฟล์ และสิทธิ์เชื่อมต่อฐานข้อมูล
+ 
