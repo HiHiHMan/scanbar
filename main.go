@@ -28,8 +28,6 @@ var (
 	defaultAPIAddr    = ":8080"
 )
 
-const labelsQuery = "SELECT TOP (200) * FROM [Inventory].[dbo].[Tbl_Label_Prints]"
-
 type app struct {
 	db *sql.DB
 }
@@ -174,7 +172,10 @@ func (a *app) labels(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 15*time.Second)
 	defer cancel()
 
-	rows, err := a.db.QueryContext(ctx, labelsQuery)
+	rows, err := a.db.QueryContext(ctx,
+		"EXEC [dbo].[Label_prints] @Action = @p1",
+		"getlabels",
+	)
 	if err != nil {
 		log.Printf("query labels failed: %v", err)
 		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read label records; check database permissions and table schema"})
@@ -235,7 +236,8 @@ func (a *app) searchLabels(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	rows, err := a.db.QueryContext(ctx,
-		"SELECT TOP (200) * FROM [Inventory].[dbo].[Tbl_Label_Prints] WHERE [productID] = @p1",
+		"EXEC [dbo].[Label_prints] @Action = @p1, @ProductID = @p2",
+		"searchlabels",
 		productID,
 	)
 	if err != nil {
@@ -295,24 +297,10 @@ func (a *app) labelPrintList(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	const query = `
-		SELECT
-			pl.[Barcode],
-			pl.[Category],
-			pl.[CreateAt],
-			lp.[ProductID],
-			lp.[Description],
-			lp.[BarcodeNo],
-			lp.[Location],
-			lp.[PSize1],
-			lp.[PSize2],
-			lp.[PSize3]
-		FROM [Inventory].[dbo].[Tbl_Label_PrintList] pl
-		LEFT JOIN [Inventory].[dbo].[Tbl_Label_Prints] lp
-			ON lp.[BarcodeNo] = pl.[Barcode]
-		ORDER BY pl.[Category], pl.[CreateAt], pl.[Barcode]`
-
-	rows, err := a.db.QueryContext(ctx, query)
+	rows, err := a.db.QueryContext(ctx,
+		"EXEC [dbo].[Label_prints] @Action = @p1",
+		"getprintlist",
+	)
 	if err != nil {
 		log.Printf("read label print list failed: %v", err)
 		writeJSON(w, http.StatusInternalServerError, apiError{Error: "failed to read saved Box items"})
