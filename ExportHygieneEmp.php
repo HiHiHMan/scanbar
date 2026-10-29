@@ -6,7 +6,7 @@ function fetchApiResponse($url)
     $options = [
         'http' => [
             'method'        => 'GET',
-            'header'        => "Accept: application/json\\r\\n",
+            'header'        => "Accept: application/json\r\n",
             'timeout'       => 15,
             'ignore_errors' => true
         ]
