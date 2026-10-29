@@ -313,7 +313,7 @@
           }
           remove.disabled = true;
           try {
-            await Api.managePrintList({ action: 'delete', barcode, category: boxNames[boxIndex] });
+            await Api.updatePrintList({ action: 'delete', barcode, category: boxNames[boxIndex] });
             selectedLabels.delete(boxIndex + '::' + Label.itemKey(item));
             boxes[boxIndex].splice(itemIndex, 1);
             Boxes.renderBoxes();
@@ -600,7 +600,7 @@
       const button = event.currentTarget;
       button.disabled = true;
       try {
-        await Api.managePrintList({ action: 'clearCategory', category: boxNames[index] });
+        await Api.updatePrintList({ action: 'clearCategory', category: boxNames[index] });
         boxes[index].forEach(item => selectedLabels.delete(index + '::' + Label.itemKey(item)));
         boxes[index] = [];
         Boxes.renderBoxes();
