@@ -1524,18 +1524,19 @@ button.secondary {
   width: 100%;
   margin-top: -16px;
   font-family: Arial, sans-serif;
-  font-size: 11px;
+  font-size: 9px;
   line-height: 1.1;
   text-align: center;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
 }
 
 @media print {
   .box-items .queue-item.print-target .line-5.barcode-number {
     display: block !important;
     margin-top: -16px !important;
-    font-size: 11px !important;
+    font-size: 9px !important;
     line-height: 1.1 !important;
     text-align: center !important;
+    letter-spacing: 2px !important;
   }
 }
