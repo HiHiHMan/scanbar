@@ -339,13 +339,6 @@
       boxTabs.appendChild(tab);
     });
 
-    const buildDataButton = document.createElement('button');
-    buildDataButton.type = 'button';
-    buildDataButton.id = 'buildDataButton';
-    buildDataButton.className = 'box-tab update-data-button';
-    buildDataButton.innerHTML = Icons.iconMarkup('refresh') + '<span>อัพเดทข้อมูล</span>';
-    buildDataButton.addEventListener('click', () => Api.buildData(buildDataButton));
-    boxTabs.appendChild(buildDataButton);
     }
   };
 
@@ -583,6 +576,10 @@
     });
     document.getElementById('printBox' + number).addEventListener('click', () => Print.printQueue(index));
   });
+
+  const buildDataButton = document.getElementById('buildDataButton');
+  buildDataButton.innerHTML = Icons.iconMarkup('refresh') + '<span>อัพเดทข้อมูล</span>';
+  buildDataButton.addEventListener('click', () => Api.buildData(buildDataButton));
 
   Icons.decorateStaticButtons();
   Boxes.renderBoxes();
