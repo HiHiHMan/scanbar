@@ -127,7 +127,7 @@
     preview.appendChild(descriptionLine);
 
     const barcodeLine = document.createElement('div');
-    barcodeLine.className = 'label-line line-4';
+    barcodeLine.className = 'label-line line-4' + (boxIndex === 2 ? ' barcode-line-repack' : '');
     const barcodeBars = document.createElement('div');
     barcodeBars.className = 'barcode-bars';
     const cleanBarcode = data.barcode.replace(/^\*+|\*+$/g, '');
