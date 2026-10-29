@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -10,31 +9,13 @@ import (
 	"time"
 )
 
-// setWorkingDirectory makes .env and the web asset folders resolve relative to the EXE,
-// rather than the Windows service manager's default working directory.
+// setWorkingDirectory makes .env and web assets resolve relative to the executable.
 func setWorkingDirectory() error {
 	exePath, err := os.Executable()
 	if err != nil {
 		return err
 	}
 	return os.Chdir(filepath.Dir(exePath))
-}
-
-func runConsole() error {
-	if err := setWorkingDirectory(); err != nil {
-		return err
-	}
-	server, db, err := buildServer()
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	err = server.ListenAndServe()
-	if errors.Is(err, http.ErrServerClosed) {
-		return nil
-	}
-	return err
 }
 
 func shutdownApplication(server *http.Server, dbCloser interface{ Close() error }) error {
