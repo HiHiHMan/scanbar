@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>BarLabel | Label Studio</title>
-  <link rel="stylesheet" href="./style/style.css?v=20261029-2">
+  <link rel="stylesheet" href="./style/style.css?v=20261029-3">
 </head>
 <body>
   <canvas id="dotCanvas" aria-hidden="true"></canvas>
@@ -13,7 +13,13 @@
       <div class="brand">BarLabel <span class="status">LABEL STUDIO</span></div>
 
     </div>
-    <div id="connection" class="status">กำลังตรวจสอบการเชื่อมต่อ…</div>
+    <div class="topbar-actions">
+      <button id="buildDataButton" type="button" class="update-data-button">
+        <span aria-hidden="true">↻</span>
+        <span>อัพเดทข้อมูล</span>
+      </button>
+      <div id="connection" class="status">กำลังตรวจสอบการเชื่อมต่อ…</div>
+    </div>
   </header>
 
   <main class="wrap">
@@ -133,6 +139,6 @@
     <footer class="foot"><span class="footer-brand">BarLabel</span><span id="count" hidden></span><span id="updated" hidden></span></footer>
   </main>
   <script src="./js/dot-background.js" defer></script>
-  <script src="./js/app.js?v=20261029-2" defer></script>
+  <script src="./js/app.js?v=20261029-3" defer></script>
 </body>
 </html>
