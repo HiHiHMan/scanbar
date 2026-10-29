@@ -1,16 +1,42 @@
-(() => {\n  const Icons = {\n    iconMarkup(name) {\n      return '<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (iconPaths[name] || '') + '</svg>';\n    },\n\n    setButtonIcon(button, name, label) {\n      button.innerHTML = Icons.iconMarkup(name) + '<span>' + label + '</span>';\n    },\n\n    decorateStaticButtons() {\n      [1, 2, 3].forEach(number => Icons.setButtonIcon(document.getElementById('printSelected' + number), 'printer', 'พิมพ์ที่เลือก'));
+(() => {
+  const Icons = {
+    iconMarkup(name) {
+      return '<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (iconPaths[name] || '') + '</svg>';
+    },
+
+    setButtonIcon(button, name, label) {
+      button.innerHTML = Icons.iconMarkup(name) + '<span>' + label + '</span>';
+    },
+
+    decorateStaticButtons() {
+      [1, 2, 3].forEach(number => Icons.setButtonIcon(document.getElementById('printSelected' + number), 'printer', 'พิมพ์ที่เลือก'));
     [1, 2, 3].forEach(number => {
       Icons.setButtonIcon(document.getElementById('printBox' + number), 'layers', 'พิมพ์ทั้งหมด');
       Icons.setButtonIcon(document.getElementById('clearBox' + number), 'trash', 'ล้าง Box');
       Icons.setButtonIcon(document.getElementById('searchButton' + number), 'search', 'ค้นหา');
       Icons.setButtonIcon(document.getElementById('clearSearch' + number), 'x', 'ล้าง');
-    });\n    }\n  };\n\n\n  const Label = {\n    valueOf(row, aliases) {\n      const keys = Object.keys(row);
+    });
+    }
+  };
+
+
+  const Label = {
+    valueOf(row, aliases) {
+      const keys = Object.keys(row);
     const normalized = new Map(keys.map(key => [key.toLowerCase().replace(/[^a-z0-9]/g, ''), key]));
     for (const alias of aliases) {
       const key = normalized.get(alias.toLowerCase().replace(/[^a-z0-9]/g, ''));
       if (key !== undefined && row[key] !== null && row[key] !== undefined && String(row[key]).trim() !== '') return String(row[key]).trim();
     }
-    return '';\n    },\n\n    field(row, aliases) {\n      return Label.valueOf(row, aliases) || '—';\n    },\n\n    labelData(row) {\n      return {
+    return '';
+    },
+
+    field(row, aliases) {
+      return Label.valueOf(row, aliases) || '—';
+    },
+
+    labelData(row) {
+      return {
       location: Label.field(row, ['Location']),
       productID: Label.field(row, ['ProductID']),
       size1: Label.valueOf(row, ['PSize1']),
@@ -18,19 +44,31 @@
       size3: Label.valueOf(row, ['PSize3']),
       description: Label.field(row, ['Description']),
       barcode: Label.valueOf(row, ['BarcodeNo', 'Barcode'])
-    };\n    },\n\n    makeLine(className, label, text) {\n      const line = document.createElement('div');
+    };
+    },
+
+    makeLine(className, label, text) {
+      const line = document.createElement('div');
     line.className = 'label-line ' + className;
     const caption = document.createElement('span');
     caption.className = 'Label.field-name';
     caption.textContent = label;
     line.append(caption, document.createTextNode(text));
-    return line;\n    },\n\n    makeLocationLine(location) {\n      const line = document.createElement('div');
+    return line;
+    },
+
+    makeLocationLine(location) {
+      const line = document.createElement('div');
     line.className = 'label-line line-1';
     line.append(document.createTextNode('form '));
     const locationElement = document.createElement('strong');
     locationElement.textContent = location;
     line.appendChild(locationElement);
-    return line;\n    },\n\n    createLabelPreview(row, boxIndex) {\n      const preview = document.createElement('div');
+    return line;
+    },
+
+    createLabelPreview(row, boxIndex) {
+      const preview = document.createElement('div');
     preview.className = 'label-preview';
 
     if (boxIndex === 1) {
@@ -94,8 +132,19 @@
       preview.appendChild(footer);
     }
 
-    return preview;\n    },\n\n    itemKey(row) {\n      const data = Label.labelData(row);
-    return [data.location, data.productID, data.barcode].join('|');\n    }\n  };\n\n\n  const Search = {\n    addTableMessage(boxIndex, message, error = false) {\n      const results = boxSearches[boxIndex].results;
+    return preview;
+    },
+
+    itemKey(row) {
+      const data = Label.labelData(row);
+    return [data.location, data.productID, data.barcode].join('|');
+    }
+  };
+
+
+  const Search = {
+    addTableMessage(boxIndex, message, error = false) {
+      const results = boxSearches[boxIndex].results;
     results.replaceChildren();
     const row = document.createElement('tr');
     const cell = document.createElement('td');
@@ -103,7 +152,11 @@
     cell.className = 'table-message' + (error ? ' error' : '');
     cell.textContent = message;
     row.appendChild(cell);
-    results.appendChild(row);\n    },\n\n    renderSearchResults(boxIndex) {\n      const state = boxSearches[boxIndex];
+    results.appendChild(row);
+    },
+
+    renderSearchResults(boxIndex) {
+      const state = boxSearches[boxIndex];
     state.results.replaceChildren();
     if (!state.data.length) {
       Search.addTableMessage(boxIndex, state.input.value.trim() ? 'ไม่พบ Product ID นี้' : 'กรอก Product ID เพื่อเริ่มค้นหา');
@@ -122,7 +175,11 @@
       Icons.setButtonIcon(button, exists ? 'check' : 'plus', exists ? 'เพิ่มแล้ว' : 'เพิ่มลง ' + boxNames[boxIndex]); button.disabled = exists;
       button.addEventListener('click', () => Boxes.addToBox(row, boxIndex));
       actionCell.appendChild(button); tr.appendChild(actionCell); state.results.appendChild(tr);
-    });\n    },\n\n    async searchByProductID(boxIndex) {\n      const state = boxSearches[boxIndex], requestId = ++state.request, productID = state.input.value.trim();
+    });
+    },
+
+    async searchByProductID(boxIndex) {
+      const state = boxSearches[boxIndex], requestId = ++state.request, productID = state.input.value.trim();
     if (!productID) {
       state.data = []; Search.renderSearchResults(boxIndex); count.textContent = 'พร้อมค้นหา'; updated.textContent = 'กรอก Product ID เพื่อค้นหา'; return;
     }
@@ -140,7 +197,14 @@
     } catch (error) {
       if (requestId !== state.request) return;
       Search.addTableMessage(boxIndex, error.message, true);
-    } finally { if (requestId === state.request) state.button.disabled = false; }\n    }\n  };\n\n\n  const Boxes = {\n    async addToBox(row, boxIndex) {\n      if (boxes[boxIndex].some(item => Label.itemKey(item) === Label.itemKey(row))) return;
+    } finally { if (requestId === state.request) state.button.disabled = false; }
+    }
+  };
+
+
+  const Boxes = {
+    async addToBox(row, boxIndex) {
+      if (boxes[boxIndex].some(item => Label.itemKey(item) === Label.itemKey(row))) return;
     const barcode = Label.valueOf(row, ['BarcodeNo', 'Barcode']);
     if (!barcode) {
       updated.textContent = 'ไม่สามารถเพิ่มได้: รายการนี้ไม่มี Barcode';
@@ -154,7 +218,11 @@
       updated.textContent = 'เพิ่ม Barcode เข้า Box ' + (boxIndex + 1) + ' แล้ว';
     } catch (error) {
       updated.textContent = 'เพิ่มรายการไม่สำเร็จ: ' + error.message;
-    }\n    },\n\n    renderBoxes() {\n      boxes.forEach((items, boxIndex) => {
+    }
+    },
+
+    renderBoxes() {
+      boxes.forEach((items, boxIndex) => {
       const number = boxIndex + 1;
       const container = document.getElementById('box' + number);
       const section = container.closest('.queue-section');
@@ -269,7 +337,14 @@
       tab.innerHTML = Icons.iconMarkup('box') + '<span>' + boxNames[boxIndex] + ' (' + items.length + ')</span>';
       tab.addEventListener('click', () => { activeBox = boxIndex; Boxes.renderBoxes(); });
       boxTabs.appendChild(tab);
-    });\n    }\n  };\n\n\n  const Print = {\n    async printAfterFontsReady() {\n      try {
+    });
+    }
+  };
+
+
+  const Print = {
+    async printAfterFontsReady() {
+      try {
       if (document.fonts && document.fonts.load) {
         await document.fonts.load('55px "LibreBarcode39"');
         await document.fonts.ready;
@@ -277,19 +352,31 @@
     } catch (error) {
       console.warn('Barcode font could not be loaded before printing:', error);
     }
-    window.print();\n    },\n\n    printSingleLabel(boxIndex, itemIndex) {\n      if (boxIndex === 1) {
+    window.print();
+    },
+
+    printSingleLabel(boxIndex, itemIndex) {
+      if (boxIndex === 1) {
       updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
       return;
     }
     if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
-    Print.printQueue(boxIndex, false, itemIndex);\n    },\n\n    updatePrintSelectionUI() {\n      [0, 1, 2].forEach(boxIndex => {
+    Print.printQueue(boxIndex, false, itemIndex);
+    },
+
+    updatePrintSelectionUI() {
+      [0, 1, 2].forEach(boxIndex => {
       const number = boxIndex + 1;
       const count = boxes[boxIndex].filter(item => selectedLabels.has(boxIndex + '::' + Label.itemKey(item))).length;
       document.getElementById('selectedCount' + number).textContent = count.toLocaleString();
       const button = printSelectedButtons[boxIndex];
       button.disabled = count === 0;
       Icons.setButtonIcon(button, 'printer', 'พิมพ์ที่เลือก');
-    });\n    },\n\n    printQueue(boxIndex = null, selectedOnly = false, singleItemIndex = null) {\n      if (boxIndex === 1) {
+    });
+    },
+
+    printQueue(boxIndex = null, selectedOnly = false, singleItemIndex = null) {
+      if (boxIndex === 1) {
       updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
       return;
     }
@@ -350,14 +437,25 @@
     if (printCards.length === 0) return;
     printCards.forEach(card => { card.classList.add('print-target'); card.classList.remove('print-last'); });
     printCards[printCards.length - 1].classList.add('print-last');
-    Print.printAfterFontsReady();\n    }\n  };\n\n\n  const Api = {\n    async managePrintList(payload) {\n      const response = await fetch('/api/label-print-list', {
+    Print.printAfterFontsReady();
+    }
+  };
+
+
+  const Api = {
+    async managePrintList(payload) {
+      const response = await fetch('/api/label-print-list', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || 'API request failed');
-    return result;\n    },\n\n    async loadPrintList() {\n      try {
+    return result;
+    },
+
+    async loadPrintList() {
+      try {
       const response = await fetch('/api/label-print-list');
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'โหลดรายการ Box ไม่สำเร็จ');
@@ -375,7 +473,11 @@
       updated.textContent = 'โหลดรายการจากฐานข้อมูลแล้ว';
     } catch (error) {
       updated.textContent = 'โหลดรายการ Box ไม่สำเร็จ: ' + error.message;
-    }\n    },\n\n    async checkConnection() {\n      try {
+    }
+    },
+
+    async checkConnection() {
+      try {
       const response = await fetch('/api/health');
       if (!response.ok) throw new Error('health check failed');
       connection.textContent = '● SQL Server เชื่อมต่อแล้ว';
@@ -385,7 +487,10 @@
       connection.textContent = 'ไม่สามารถตรวจสอบ API ได้';
       connection.style.background = '#fee4e2';
       connection.style.color = '#b42318';
-    }\n    }\n  };\n
+    }
+    }
+  };
+
   const boxSearches = [0, 1, 2].map(index => {
     const number = index + 1;
     return { input: document.getElementById('search' + number), button: document.getElementById('searchButton' + number),
