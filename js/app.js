@@ -185,12 +185,16 @@
     }
     Search.addTableMessage(boxIndex, 'กำลังค้นหา Product ID…'); state.button.disabled = true;
     try {
-      const response = await fetch('/api/labels/search?productID=' + encodeURIComponent(productID));
-      const payload = await response.json();
+      let payload;
+      try {
+        payload = await Api.searchLabels(productID);
+      } catch (error) {
+        if (requestId !== state.request) return;
+        if (error.status === 404) state.data = [];
+        else throw error;
+      }
       if (requestId !== state.request) return;
-      if (response.status === 404) state.data = [];
-      else if (!response.ok) throw new Error(payload.error || 'ค้นหาข้อมูลไม่สำเร็จ');
-      else state.data = Array.isArray(payload.data) ? payload.data : [];
+      if (payload) state.data = Array.isArray(payload.data) ? payload.data : [];
       Search.renderSearchResults(boxIndex);
       count.textContent = 'Box ' + (boxIndex + 1) + ': ผลการค้นหา ' + state.data.length.toLocaleString() + ' รายการ';
       updated.textContent = 'ค้นหา Product ID: ' + productID + ' · ' + new Date().toLocaleString('th-TH');
@@ -211,7 +215,7 @@
       return;
     }
     try {
-      await Api.managePrintList({ action: 'insert', barcode, category: boxNames[boxIndex] });
+      await Api.updatePrintList({ action: 'insert', barcode, category: boxNames[boxIndex] });
       boxes[boxIndex].push(row);
       Boxes.renderBoxes();
       Search.renderSearchResults(boxIndex);
@@ -444,67 +448,101 @@
 
 
   const Api = {
-    async managePrintList(payload) {
-      const response = await fetch('/api/label-print-list', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error || 'API request failed');
-    return result;
+    async request(url, options = {}) {
+      const response = await fetch(url, options);
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        const error = new Error(payload.error || 'API request failed');
+        error.status = response.status;
+        throw error;
+      }
+
+      return payload;
     },
 
+    searchLabels(productID) {
+      const query = encodeURIComponent(productID);
+      return Api.request('/api/labels/search?productID=' + query);
+    },
+
+    getPrintList() {
+      return Api.request('/api/label-print-list');
+    },
+
+    updatePrintList(data) {
+      return Api.request('/api/label-print-list', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    },
+
+    checkHealth() {
+      return Api.request('/api/health');
+    }
+  };
+
+  const PrintList = {
     async buildData(button) {
       if (!window.confirm('ต้องการอัพเดทข้อมูล Label จากฐานข้อมูลใช่หรือไม่?')) return;
+
       button.disabled = true;
       updated.textContent = 'กำลังอัพเดทข้อมูล…';
+
       try {
-        await Api.managePrintList({ action: 'buildData' });
-        await Api.loadPrintList();
+        await Api.updatePrintList({ action: 'buildData' });
+        await PrintList.loadPrintList();
         updated.textContent = 'อัพเดทข้อมูลสำเร็จ';
       } catch (error) {
         updated.textContent = 'อัพเดทข้อมูลไม่สำเร็จ: ' + error.message;
       } finally {
-        const currentButton = document.getElementById('buildDataButton');
-        if (currentButton) currentButton.disabled = false;
+        button.disabled = false;
       }
     },
 
     async loadPrintList() {
       try {
-      const response = await fetch('/api/label-print-list');
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || 'โหลดรายการ Box ไม่สำเร็จ');
-      boxes.forEach(items => items.splice(0, items.length));
-      (Array.isArray(payload.data) ? payload.data : []).forEach(row => {
-        const category = Label.valueOf(row, ['Category']);
-        const boxIndex = ({ 'Label Repack': 0, 'Label ประตูรับ': 1, 'Label หน้าโหลด': 2 })[category];
-        if (boxIndex === undefined) return;
-        if (!boxes[boxIndex].some(item => Label.itemKey(item) === Label.itemKey(row))) {
-          boxes[boxIndex].push(row);
-        }
-      });
-      Boxes.renderBoxes();
-      boxSearches.forEach((_, index) => Search.renderSearchResults(index));
-      updated.textContent = 'โหลดรายการจากฐานข้อมูลแล้ว';
-    } catch (error) {
-      updated.textContent = 'โหลดรายการ Box ไม่สำเร็จ: ' + error.message;
-    }
+        const payload = await Api.getPrintList();
+
+        boxes.forEach(items => items.splice(0, items.length));
+
+        (Array.isArray(payload.data) ? payload.data : []).forEach(row => {
+          const category = Label.valueOf(row, ['Category']);
+          const boxIndex = {
+            'Label Repack': 0,
+            'Label ประตูรับ': 1,
+            'Label หน้าโหลด': 2
+          }[category];
+
+          if (boxIndex === undefined) return;
+
+          const exists = boxes[boxIndex].some(
+            item => Label.itemKey(item) === Label.itemKey(row)
+          );
+
+          if (!exists) boxes[boxIndex].push(row);
+        });
+
+        Boxes.renderBoxes();
+        boxSearches.forEach((_, index) => Search.renderSearchResults(index));
+        updated.textContent = 'โหลดรายการจากฐานข้อมูลแล้ว';
+      } catch (error) {
+        updated.textContent = 'โหลดรายการ Box ไม่สำเร็จ: ' + error.message;
+      }
     },
 
     async checkConnection() {
       try {
-      const response = await fetch('/api/health');
-      if (!response.ok) throw new Error('health check failed');
-      connection.textContent = '● SQL Server เชื่อมต่อแล้ว';
-      connection.style.background = '#e1f8eb';
-      connection.style.color = '#17683a';
-    } catch {
-      connection.textContent = 'ไม่สามารถตรวจสอบ API ได้';
-      connection.style.background = '#fee4e2';
-      connection.style.color = '#b42318';
-    }
+        await Api.checkHealth();
+        connection.textContent = '● SQL Server เชื่อมต่อแล้ว';
+        connection.style.background = '#e1f8eb';
+        connection.style.color = '#17683a';
+      } catch {
+        connection.textContent = 'ไม่สามารถตรวจสอบ API ได้';
+        connection.style.background = '#fee4e2';
+        connection.style.color = '#b42318';
+      }
     }
   };
 
@@ -579,11 +617,11 @@
 
   const buildDataButton = document.getElementById('buildDataButton');
   buildDataButton.innerHTML = Icons.iconMarkup('refresh') + '<span>อัพเดทข้อมูล</span>';
-  buildDataButton.addEventListener('click', () => Api.buildData(buildDataButton));
+  buildDataButton.addEventListener('click', () => PrintList.buildData(buildDataButton));
 
   Icons.decorateStaticButtons();
   Boxes.renderBoxes();
   boxSearches.forEach((_, index) => Search.renderSearchResults(index));
-  Api.loadPrintList();
-  Api.checkConnection();
+  PrintList.loadPrintList();
+  PrintList.checkConnection();
 })();
