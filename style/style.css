@@ -1498,23 +1498,21 @@ button.secondary {
 }
 
 
-/* Barcode: fixed 200px width, taller bars, and hide human-readable digits below. */
+/* Barcode: hide digits below and increase bar height. */
 .box-items .barcode-bars {
-  width: 200px;
   max-width: 100%;
   margin-inline: auto;
   clip-path: inset(0 0 40% 0);
-  transform: scaleY(2.8);
+  transform: scaleY(2.3);
   transform-origin: center center;
 }
 
 @media print {
   .box-items .queue-item.print-target .barcode-bars {
-    width: 200px !important;
     max-width: 100% !important;
     margin-inline: auto !important;
     clip-path: inset(0 0 40% 0) !important;
-    transform: scaleY(2.8) !important;
+    transform: scaleY(2.3) !important;
     transform-origin: center center !important;
   }
 }
