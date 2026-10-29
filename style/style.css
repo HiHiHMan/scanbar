@@ -34,6 +34,28 @@ body {
   letter-spacing: .2px;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.update-data-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #398568 0%, #24684f 100%);
+  box-shadow: 0 2px 8px rgb(36 104 79 / 25%);
+}
+
+.update-data-button:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
 .subtitle {
   font-size: 13px;
   color: #aebbd2;
@@ -1309,6 +1331,11 @@ html, body, main, .wrap, .boxes-section, .boxes-grid, .queue-section, .box-items
 @media(max-width:600px) {
 .topbar {
   padding: 18px;
+}
+
+.topbar-actions {
+  width: 100%;
+  justify-content: space-between;
 }
 
 .wrap {
