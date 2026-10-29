@@ -338,6 +338,14 @@
       tab.addEventListener('click', () => { activeBox = boxIndex; Boxes.renderBoxes(); });
       boxTabs.appendChild(tab);
     });
+
+    const buildDataButton = document.createElement('button');
+    buildDataButton.type = 'button';
+    buildDataButton.id = 'buildDataButton';
+    buildDataButton.className = 'box-tab update-data-button';
+    buildDataButton.innerHTML = Icons.iconMarkup('refresh') + '<span>อัพเดทข้อมูล</span>';
+    buildDataButton.addEventListener('click', () => Api.buildData(buildDataButton));
+    boxTabs.appendChild(buildDataButton);
     }
   };
 
@@ -454,6 +462,22 @@
     return result;
     },
 
+    async buildData(button) {
+      if (!window.confirm('ต้องการอัพเดทข้อมูล Label จากฐานข้อมูลใช่หรือไม่?')) return;
+      button.disabled = true;
+      updated.textContent = 'กำลังอัพเดทข้อมูล…';
+      try {
+        await Api.managePrintList({ action: 'buildData' });
+        await Api.loadPrintList();
+        updated.textContent = 'อัพเดทข้อมูลสำเร็จ';
+      } catch (error) {
+        updated.textContent = 'อัพเดทข้อมูลไม่สำเร็จ: ' + error.message;
+      } finally {
+        const currentButton = document.getElementById('buildDataButton');
+        if (currentButton) currentButton.disabled = false;
+      }
+    },
+
     async loadPrintList() {
       try {
       const response = await fetch('/api/label-print-list');
@@ -516,7 +540,8 @@
     box: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 8 9 5 9-5M3 8v9l9 5 9-5V8M12 13v9"></path>',
     layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 12 9 5 9-5M3 16l9 5 9-5"></path>',
     barcode: '<path d="M4 5v14M7 5v14M10 5v14M14 5v14M16 5v14M20 5v14"></path>',
-    package: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="M3 8v9l9 4 9-4V8M12 13v8"></path>'
+    package: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="M3 8v9l9 4 9-4V8M12 13v8"></path>',
+    refresh: '<path d="M20 7v5h-5"></path><path d="M4 17v-5h5"></path><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"></path>'
   };
 
   window.addEventListener('afterprint', () => {
