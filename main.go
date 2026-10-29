@@ -36,21 +36,21 @@ type apiError struct {
 	Error string `json:"error"`
 }
 
-func main() {
+func buildServer() (*http.Server, *sql.DB, error) {
 	if err := loadEnvFile(".env"); err != nil {
-		log.Printf("could not load .env: %v", err)
+		return nil, nil, fmt.Errorf("load .env: %w", err)
 	}
 	addr := env("API_ADDR", defaultAPIAddr)
 	db, err := openDatabase()
 	if err != nil {
-		log.Fatalf("database configuration error: %v", err)
+		return nil, nil, fmt.Errorf("database configuration error: %w", err)
 	}
-	defer db.Close()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
-		log.Fatalf("cannot connect to SQL Server: %v", err)
+		db.Close()
+		return nil, nil, fmt.Errorf("cannot connect to SQL Server: %w", err)
 	}
 
 	a := &app{db: db}
@@ -74,8 +74,8 @@ func main() {
 		IdleTimeout:       60 * time.Second,
 	}
 
-	log.Printf("Scanbar running at http://localhost%s", addr)
-	log.Fatal(server.ListenAndServe())
+	log.Printf("BarLabel running at http://localhost%s", addr)
+	return server, db, nil
 }
 
 func openDatabase() (*sql.DB, error) {
