@@ -1503,8 +1503,8 @@ button.secondary {
   width: 200px;
   max-width: 100%;
   margin-inline: auto;
-  clip-path: inset(0 0 38% 0);
-  transform: scaleY(1.8);
+  clip-path: inset(0 0 40% 0);
+  transform: scaleY(2.8);
   transform-origin: center center;
 }
 
@@ -1513,8 +1513,8 @@ button.secondary {
     width: 200px !important;
     max-width: 100% !important;
     margin-inline: auto !important;
-    clip-path: inset(0 0 38% 0) !important;
-    transform: scaleY(1.8) !important;
+    clip-path: inset(0 0 40% 0) !important;
+    transform: scaleY(2.8) !important;
     transform-origin: center center !important;
   }
 }
