@@ -1374,7 +1374,7 @@ input[type=search] {
   flex-basis: 100%;
 }
 
-.section-heading > .section-heading > .add-actions {
+.section-heading .add-actions {
   flex-wrap: wrap;
 }
 }
