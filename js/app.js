@@ -137,7 +137,7 @@
     preview.appendChild(barcodeLine);
 
     const barcodeNumberLine = document.createElement('div');
-    barcodeNumberLine.className = 'label-line line-5 barcode-number';
+    barcodeNumberLine.className = 'label-line line-5 barcode-number' + (boxIndex === 2 ? ' barcode-number-repack' : '');
     barcodeNumberLine.textContent = cleanBarcode;
     preview.appendChild(barcodeNumberLine);
 
