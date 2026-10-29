@@ -13,7 +13,7 @@ D:\Golang\scanbar\barLabel.exe
 1. Build โปรแกรม
 ----------------
 
-เปิด CMD หรือ PowerShell แล้วรัน:
+เปิด CMD แล้วรัน:
 
 cd /d D:\Golang\scanbar
 go mod tidy
