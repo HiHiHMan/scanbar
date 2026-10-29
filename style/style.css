@@ -1527,7 +1527,7 @@ button.secondary {
   font-size: 9px;
   line-height: 1.1;
   text-align: center;
-  letter-spacing: 2px;
+  letter-spacing: 10px;
 }
 
 @media print {
@@ -1537,6 +1537,6 @@ button.secondary {
     font-size: 9px !important;
     line-height: 1.1 !important;
     text-align: center !important;
-    letter-spacing: 2px !important;
+    letter-spacing: 10px !important;
   }
 }
