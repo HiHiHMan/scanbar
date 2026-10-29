@@ -1504,7 +1504,7 @@ button.secondary {
   max-width: 100%;
   margin-inline: auto;
   clip-path: inset(0 0 40% 0);
-  transform: scaleY(2.5);
+  transform: scaleY(2.6);
   transform-origin: center center;
 }
 
@@ -1514,7 +1514,25 @@ button.secondary {
     max-width: 100% !important;
     margin-inline: auto !important;
     clip-path: inset(0 0 40% 0) !important;
-    transform: scaleY(2.5) !important;
+    transform: scaleY(2.6) !important;
     transform-origin: center center !important;
+  }
+}
+
+.box-items .barcode-number {
+  display: block;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.1;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+@media print {
+  .box-items .queue-item.print-target .barcode-number {
+    display: block !important;
+    font-size: 16px !important;
+    line-height: 1.1 !important;
+    text-align: center !important;
   }
 }
