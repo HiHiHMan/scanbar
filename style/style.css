@@ -1672,17 +1672,17 @@ button.secondary {
 }
 
 
-/* Pull barcode line 4 closer to line 5 by removing reserved bottom space. */
+/* Pull barcode line 4 a little closer to line 5. */
 .box-items .label-preview .line-4,
 .box-items .label-preview .barcode-line-repack {
   padding-bottom: 0 !important;
-  margin-bottom: -4px !important;
+  margin-bottom: -6px !important;
 }
 
 @media print {
   .box-items .queue-item.print-target .label-preview .line-4,
   .box-items .queue-item.print-target .label-preview .barcode-line-repack {
     padding-bottom: 0 !important;
-    margin-bottom: -4px !important;
+    margin-bottom: -6px !important;
   }
 }
