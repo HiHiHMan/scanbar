@@ -1496,3 +1496,17 @@ button.secondary {
   padding: 0;
   line-height: 1;
 }
+
+
+/* Barcode: compress width and increase bar height in preview and print. */
+.box-items .barcode-bars {
+  transform: scaleX(0.78) scaleY(1.45);
+  transform-origin: center center;
+}
+
+@media print {
+  .box-items .queue-item.print-target .barcode-bars {
+    transform: scaleX(0.78) scaleY(1.45) !important;
+    transform-origin: center center !important;
+  }
+}
