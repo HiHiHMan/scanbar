@@ -1602,3 +1602,19 @@ button.secondary {
     padding-top: 0 !important;
   }
 }
+
+
+/* Repack: reserve real layout space for the vertically scaled barcode so line-5 cannot overlap it. */
+.box-items .label-preview .barcode-line-repack {
+  box-sizing: border-box !important;
+  flex: 0 0 auto !important;
+  padding-bottom: 14px !important;
+}
+
+@media print {
+  .box-items .queue-item.print-target .label-preview .barcode-line-repack {
+    box-sizing: border-box !important;
+    flex: 0 0 auto !important;
+    padding-bottom: 14px !important;
+  }
+}
