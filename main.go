@@ -11,9 +11,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"sync"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/joho/godotenv"
