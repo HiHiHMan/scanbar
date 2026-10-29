@@ -1,17 +1,34 @@
  
-<?php 
+<?php
+// เรียก API โดยไม่ใช้ cURL
+function fetchApiResponse($url)
+{
+    $options = [
+        'http' => [
+            'method'        => 'GET',
+            'header'        => "Accept: application/json\\r\\n",
+            'timeout'       => 15,
+            'ignore_errors' => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = @file_get_contents($url, false, $context);
+
+    if ($response === false) {
+        error_log('API request failed: ' . $url);
+        echo 'Error: ไม่สามารถเชื่อมต่อ API ได้';
+        return false;
+    }
+
+    return $response;
+}
+ 
 // $reportName = isset($_POST['reportName']) ? $_POST['reportName'] : null;
 $urlAPI = 'http://192.168.248.20:5003';
 
 $api_url = $urlAPI . '/api/cdc/hygiene/reportEmp';
-$dataCurl = curl_init();
-curl_setopt($dataCurl, CURLOPT_URL, $api_url);
-curl_setopt($dataCurl, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($dataCurl);
-if (curl_errno($dataCurl)) {
-    echo 'Error:' . curl_error($dataCurl);
-}
-curl_close($dataCurl);
+$response = fetchApiResponse($api_url);
 $data = json_decode($response, true);
 
 if ($data === null) {
