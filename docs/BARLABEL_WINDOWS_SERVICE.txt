@@ -1,0 +1,85 @@
+BarLabel - ติดตั้งเป็น Windows Service จริง
+==============================================
+
+ชื่อ Service:
+BarLabel
+
+ตำแหน่งโปรแกรม:
+D:\Golang\scanbar\barLabel.exe
+
+โค้ดใน repo รองรับ Windows Service แล้ว โดยใช้ Windows Service Control Manager
+และ Service handler ใน service_windows.go
+
+1. Build โปรแกรม
+----------------
+
+เปิด CMD แล้วรัน:
+
+cd /d D:\Golang\scanbar
+go mod tidy
+go build -o barLabel.exe .
+
+ตรวจสอบว่ามีไฟล์นี้:
+D:\Golang\scanbar\barLabel.exe
+
+ตรวจสอบว่าไฟล์ .env อยู่ในโฟลเดอร์เดียวกับ EXE และมีค่า DB_USER, DB_PASSWORD
+รวมถึงค่า DB_HOST, DB_PORT, DB_NAME ตามการตั้งค่าของระบบ
+
+2. หยุดและลบ Scheduled Task เดิม (ถ้ามี)
+----------------------------------------
+
+เปิด CMD แบบ Run as administrator:
+
+schtasks /end /tn "BarLabel"
+schtasks /delete /tn "BarLabel" /f
+
+ถ้าคำสั่งแจ้งว่าไม่พบ Task สามารถข้ามได้
+
+3. ติดตั้ง Windows Service
+--------------------------
+
+เปิด CMD แบบ Run as administrator:
+
+sc.exe create BarLabel binPath= "D:\Golang\scanbar\barLabel.exe" start= auto DisplayName= "BarLabel"
+sc.exe description BarLabel "BarLabel web application"
+sc.exe start BarLabel
+
+4. ตรวจสอบสถานะ
+---------------
+
+sc.exe query BarLabel
+
+ต้องเห็น:
+STATE : 4 RUNNING
+
+ทดสอบ API ในเครื่อง:
+http://localhost:8080/api/health
+
+5. คำสั่งจัดการ Service
+-----------------------
+
+หยุด:
+sc.exe stop BarLabel
+
+เริ่ม:
+sc.exe start BarLabel
+
+ตรวจสอบ:
+sc.exe query BarLabel
+
+ลบ Service (หยุดก่อน):
+sc.exe stop BarLabel
+sc.exe delete BarLabel
+
+6. หมายเหตุสำคัญ
+----------------
+
+- ต้อง build EXE ใหม่จากโค้ดล่าสุดก่อนติดตั้ง Service
+- โปรแกรมตั้ง working directory เป็นโฟลเดอร์ของ EXE จึงอ่าน .env, index.html,
+  style, js และ font จาก D:\Golang\scanbar ได้
+- Service ใช้บัญชี LocalSystem เป็นค่าเริ่มต้น หากนโยบายหรือสิทธิ์ SQL Server
+  ต้องใช้บัญชี Windows เฉพาะ ให้เปลี่ยนบัญชีที่แท็บ Log On ของ Service
+- การตั้งค่า SQL Login ใน .env ต้องมี DB_USER และ DB_PASSWORD
+- หากมี Service ชื่อ BarLabel อยู่แล้ว ให้หยุดและลบ Service เดิมก่อนสร้างใหม่
+  ห้ามรัน sc.exe create ซ้ำโดยไม่ตรวจสอบสถานะก่อน
+- ถ้า Service ไม่เริ่ม ให้ตรวจสอบ Event Viewer และการเชื่อมต่อ SQL Server
