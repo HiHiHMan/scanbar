@@ -7,74 +7,100 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
-	"golang.org/x/sys/windows/svc"
+	"github.com/kardianos/service"
 )
 
-type barLabelService struct{}
+type barLabelService struct {
+	server *http.Server
+	db     interface{ Close() error }
+}
 
-func (p *barLabelService) Execute(args []string, requests <-chan svc.ChangeRequest, changes chan<- svc.Status) (bool, uint32) {
-	const acceptedCommands = svc.AcceptStop | svc.AcceptShutdown
-
-	changes <- svc.Status{State: svc.StartPending}
+// Start prepares the existing BarLabel API, then starts its HTTP server
+// asynchronously as required by kardianos/service.
+func (p *barLabelService) Start(s service.Service) error {
 	if err := setWorkingDirectory(); err != nil {
-		log.Printf("set service working directory failed: %v", err)
-		return false, 1
+		return fmt.Errorf("set service working directory: %w", err)
 	}
 
 	server, db, err := buildServer()
 	if err != nil {
-		log.Printf("BarLabel startup failed: %v", err)
-		return false, 1
+		return fmt.Errorf("start BarLabel: %w", err)
 	}
 
-	serverErrors := make(chan error, 1)
+	p.server = server
+	p.db = db
+
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			serverErrors <- err
+			// Match the reference service's behavior: a server that cannot
+			// continue running should exit so Windows can report a failure.
+			log.Printf("BarLabel HTTP server stopped unexpectedly: %v", err)
+			os.Exit(1)
 		}
 	}()
 
-	status := svc.Status{State: svc.Running, Accepts: acceptedCommands}
-	changes <- status
 	log.Printf("BarLabel Windows Service is running")
+	return nil
+}
 
-	for {
-		select {
-		case request, ok := <-requests:
-			if !ok {
-				_ = shutdownApplication(server, db)
-				return false, 0
-			}
-
-			switch request.Cmd {
-			case svc.Interrogate:
-				changes <- status
-			case svc.Stop, svc.Shutdown:
-				changes <- svc.Status{State: svc.StopPending}
-				if err := shutdownApplication(server, db); err != nil {
-					log.Printf("BarLabel shutdown warning: %v", err)
-				}
-				return false, 0
-			default:
-				log.Printf("unsupported service control request: %v", request.Cmd)
-			}
-		case err := <-serverErrors:
-			log.Printf("BarLabel HTTP server stopped unexpectedly: %v", err)
-			_ = shutdownApplication(server, db)
-			return false, 1
-		}
-	}
+// Stop gracefully closes HTTP requests and the SQL Server connection pool.
+func (p *barLabelService) Stop(s service.Service) error {
+	return shutdownApplication(p.server, p.db)
 }
 
 func runService() error {
-	isService, err := svc.IsWindowsService()
+	if err := setWorkingDirectory(); err != nil {
+		return fmt.Errorf("set executable working directory: %w", err)
+	}
+
+	svcConfig := &service.Config{
+		Name:        "BarLabel",
+		DisplayName: "BarLabel",
+		Description: "BarLabel web application API on port 8080",
+	}
+
+	prg := &barLabelService{}
+	s, err := service.New(prg, svcConfig)
 	if err != nil {
-		return fmt.Errorf("detect Windows Service mode: %w", err)
+		return fmt.Errorf("configure BarLabel service: %w", err)
 	}
-	if !isService {
-		return runConsole()
+
+	// These commands follow docs/main.go and allow the EXE to manage
+	// its own Windows Service registration.
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "install":
+			if err := s.Install(); err != nil {
+				return fmt.Errorf("install BarLabel service: %w", err)
+			}
+			fmt.Println("BarLabel service installed successfully")
+			return nil
+		case "uninstall":
+			if err := s.Uninstall(); err != nil {
+				return fmt.Errorf("uninstall BarLabel service: %w", err)
+			}
+			fmt.Println("BarLabel service uninstalled successfully")
+			return nil
+		case "start":
+			if err := s.Start(); err != nil {
+				return fmt.Errorf("start BarLabel service: %w", err)
+			}
+			fmt.Println("BarLabel service start requested successfully")
+			return nil
+		case "stop":
+			if err := s.Stop(); err != nil {
+				return fmt.Errorf("stop BarLabel service: %w", err)
+			}
+			fmt.Println("BarLabel service stop requested successfully")
+			return nil
+		}
 	}
-	return svc.Run("BarLabel", &barLabelService{})
+
+	if err := s.Run(); err != nil {
+		return fmt.Errorf("run BarLabel service: %w", err)
+	}
+	return nil
 }
