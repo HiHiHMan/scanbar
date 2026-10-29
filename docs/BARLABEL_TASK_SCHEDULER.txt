@@ -1,67 +1,75 @@
-BarLabel - ตั้งค่าให้เปิดอัตโนมัติด้วย Task Scheduler
-====================================================
+BarLabel - Windows Service (Service จริง)
+==========================================
 
-ไฟล์โปรแกรม:
+Executable ปัจจุบัน:
 D:\Golang\scanbar\barLabel.exe
 
-วิธีนี้ใช้ Task Scheduler ที่มีอยู่ใน Windows ไม่ต้องติดตั้ง NSSM
-หมายเหตุ: เป็น Scheduled Task ไม่ใช่ Windows Service จริง
+สำคัญมาก
+--------
+โปรแกรม Go ที่เรียก net/http.ListenAndServe() แบบปกติ ไม่ใช่ Windows Service
+การใช้ sc.exe create กับ executable ปัจจุบันเพียงอย่างเดียวจะไม่ทำให้โปรแกรม
+กลายเป็น Service และอาจเริ่มแล้วหยุดทันที
 
-วิธีที่แนะนำ (ตั้งค่า Working directory ได้)
---------------------------------------------
+ต้องแก้และ build barLabel.exe ให้รองรับ Windows Service ก่อน
+(เช่น ใช้ golang.org/x/sys/windows/svc หรือไลบรารี Go สำหรับ Windows Service)
+จากนั้นจึงลงทะเบียน executable ที่รองรับ Service ด้วย sc.exe ได้
 
-1. กด Win + R พิมพ์ taskschd.msc แล้วกด Enter
-2. เลือก Create Task... (ไม่ใช่ Create Basic Task)
-3. แท็บ General:
-   - Name: BarLabel
-   - เลือก Run whether user is logged on or not
-   - หากจำเป็นต้องใช้สิทธิ์สูง ให้เลือก Run with highest privileges
-   - เลือกบัญชีผู้ใช้ที่มีสิทธิ์เข้าถึง SQL Server และไฟล์โปรแกรม
-4. แท็บ Triggers:
-   - กด New...
-   - Begin the task: At startup
-   - กด OK
-5. แท็บ Actions:
-   - กด New...
-   - Action: Start a program
-   - Program/script: D:\Golang\scanbar\barLabel.exe
-   - Start in (optional): D:\Golang\scanbar
-   - กด OK
-6. แท็บ Conditions:
-   - หากไม่ต้องการให้ขึ้นกับไฟ AC ให้เอาเครื่องหมายเลือกเงื่อนไขพลังงานออกตามต้องการ
-7. กด OK และกรอกรหัสผ่านบัญชี หาก Windows ขอ
-8. คลิกขวา Task ชื่อ BarLabel แล้วเลือก Run เพื่อทดสอบ
+ขั้นตอนหลังจาก build executable ที่รองรับ Windows Service แล้ว
+---------------------------------------------------------------
 
-คำสั่ง CMD (สร้าง Task แบบพื้นฐาน)
------------------------------------
+1. เปิด CMD แบบ Run as administrator
 
-เปิด CMD แบบ Run as administrator แล้วรัน:
+2. สร้าง Service ชื่อ BarLabel:
 
-schtasks /create /tn "BarLabel" /tr "D:\Golang\scanbar\barLabel.exe" /sc onstart /ru SYSTEM /f
+sc.exe create BarLabel binPath= "D:\Golang\scanbar\barLabel.exe" start= auto DisplayName= "BarLabel"
 
-schtasks /run /tn "BarLabel"
+3. ตั้งคำอธิบาย (ไม่บังคับ):
 
-ตรวจสอบ Task:
+sc.exe description BarLabel "BarLabel web application"
 
-schtasks /query /tn "BarLabel" /v /fo list
+4. เริ่ม Service:
 
-หยุด Task ที่กำลังรัน:
+sc.exe start BarLabel
 
-schtasks /end /tn "BarLabel"
+5. ตรวจสอบสถานะ:
 
-ลบ Task:
+sc.exe query BarLabel
 
-schtasks /delete /tn "BarLabel" /f
+สถานะที่ต้องการคือ STATE: 4 RUNNING
 
-ข้อควรระวัง
------------
+คำสั่งจัดการ Service
+--------------------
 
-- คำสั่ง CMD ด้านบนใช้บัญชี SYSTEM และไม่ได้กำหนด Working directory ผ่าน schtasks
-  หากโปรแกรมอ่านไฟล์ .env, index.html, style, js หรือ font ด้วย path แบบ relative
-  ให้ใช้วิธี GUI ด้านบนและตั้งค่า Start in เป็น D:\Golang\scanbar
-- หาก SQL Server ใช้ Windows Authentication บัญชี SYSTEM อาจไม่มีสิทธิ์เข้าฐานข้อมูล
-  ให้ใช้บัญชี Windows ที่ได้รับอนุญาต แทนการใช้ SYSTEM
-- หากใช้ SQL Login ให้ตรวจสอบว่าไฟล์ .env อยู่ในตำแหน่งที่โปรแกรมอ่านจริง และมีค่าที่จำเป็น
-- หลังตั้งค่าแล้ว ทดสอบเว็บจากเครื่องเดียวกัน เช่น http://localhost:8080
-- หาก Task แสดงสถานะ Running แต่เว็บเข้าไม่ได้ ให้ตรวจสอบ log ของโปรแกรม, port ที่ใช้งาน,
-  path ของไฟล์ และสิทธิ์เชื่อมต่อฐานข้อมูล
+หยุด:
+
+sc.exe stop BarLabel
+
+เริ่มใหม่ (หยุดก่อน แล้วเริ่ม):
+
+sc.exe stop BarLabel
+sc.exe start BarLabel
+
+ลบ Service (หยุดก่อน):
+
+sc.exe stop BarLabel
+sc.exe delete BarLabel
+
+ข้อกำหนดก่อนใช้งานจริง
+-----------------------
+
+- ต้อง build executable ที่รองรับ Windows Service ก่อน ห้ามใช้คำสั่ง sc.exe create
+  กับ executable ปกติแล้วคาดหวังว่าจะทำงานเป็น Service ได้ทันที
+- Service ทำงานด้วยบัญชีระบบโดยค่าเริ่มต้น หากต้องเชื่อมต่อ SQL Server หรืออ่านไฟล์
+  ที่จำกัดสิทธิ์ ให้ตั้ง Log On account ของ Service เป็นบัญชี Windows ที่เหมาะสม
+- โปรแกรมปัจจุบันอ่าน .env และไฟล์ index.html, style, js, font ด้วย relative paths
+  ต้องแก้โปรแกรมให้กำหนด working directory เป็น D:\Golang\scanbar หรือเปลี่ยนเป็น
+  absolute paths ก่อนรันเป็น Service ไม่เช่นนั้นอาจหาไฟล์ไม่เจอ
+- ต้องมีไฟล์ .env ที่จำเป็นในตำแหน่งที่โปรแกรมอ่านได้ ห้าม commit secret ลง Git
+- เมื่อ Service ทำงานแล้ว ทดสอบ API เช่น http://localhost:8080/api/health
+- หาก Service เริ่มไม่สำเร็จ ให้ตรวจ Event Viewer > Windows Logs > Application
+  และเพิ่ม logging ลงไฟล์สำหรับตรวจสอบ startup errors
+
+หมายเหตุ
+-------
+ไฟล์นี้เป็นคู่มือการติดตั้งหลังจากโปรแกรมรองรับ Windows Service แล้ว
+ยังไม่ใช่การเปลี่ยน barLabel.exe ให้รองรับ Service ด้วยตัวมันเอง
