@@ -1542,3 +1542,17 @@ button.secondary {
     letter-spacing: 10px !important;
   }
 }
+
+
+/* Repack: keep the human-readable barcode number below the barcode. */
+.box-items .line-5.barcode-number-repack {
+  margin-top: 0 !important;
+  margin-bottom: 3px !important;
+}
+
+@media print {
+  .box-items .queue-item.print-target .line-5.barcode-number-repack {
+    margin-top: 0 !important;
+    margin-bottom: 3px !important;
+  }
+}
