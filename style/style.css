@@ -1498,8 +1498,9 @@ button.secondary {
 }
 
 
-/* Barcode: hide digits below and increase bar height. */
+/* Barcode: hide digits below and adjust bar height. */
 .box-items .barcode-bars {
+  font-size: 40px;
   max-width: 100%;
   margin-inline: auto;
   clip-path: inset(0 0 40% 0);
@@ -1509,6 +1510,7 @@ button.secondary {
 
 @media print {
   .box-items .queue-item.print-target .barcode-bars {
+    font-size: 40px !important;
     max-width: 100% !important;
     margin-inline: auto !important;
     clip-path: inset(0 0 40% 0) !important;
