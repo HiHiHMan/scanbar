@@ -1,4 +1,11 @@
 @font-face {
+  font-family: "Kanit";
+  src: url("../font/Kanit-Light.ttf?v=20261029-1") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
   font-family: "LibreBarcode39";
   src: url("../font/LibreBarcode39.ttf?v=20261029-2") format("truetype");
   font-weight: normal;
@@ -11,6 +18,8 @@
 
 body {
   margin: 0;
+  font-family: "Kanit", sans-serif;
+  font-weight: 300;
   color: #332c29;
   background: #fbf7f2;
 }
@@ -113,6 +122,7 @@ h1 {
 }
 
 button {
+  font-family: inherit;
   border: 0;
   border-radius: 10px;
   padding: 11px 15px;
@@ -230,6 +240,7 @@ button.secondary {
 
 
 input[type=search] {
+  font-family: inherit;
   width: min(330px, 70vw);
   padding: 11px 13px;
   border: 1px solid #d7deea;
@@ -589,6 +600,7 @@ input[type=checkbox] {
 }
 
 .label-preview {
+  font-family: Arial, sans-serif;
   background: #fff;
   border: 1px dashed #c6cedb;
   border-radius: 5px;
@@ -945,6 +957,7 @@ body {
 }
 
 .label-preview {
+  font-family: Arial, sans-serif;
   border: 0;
   border-radius: 0;
   padding: 1.5mm 2mm;
