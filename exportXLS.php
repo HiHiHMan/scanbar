@@ -955,17 +955,17 @@ if ($reportName == 'workloadBefore') {
 
     // $api_url = $urlAPI . '/api/reportRP18/rp18DeliAfterbySection';
     // $response = @file_get_contents($api_url, false, stream_context_create([
-        'http' => [
-            'method' => 'POST',
-            'header' => "Content-Length: 0\r\n",
-            'timeout' => 15,
-            'ignore_errors' => true
-        ]
-    ]));
-    if ($response === false) {
-        echo 'Error: Unable to connect to API: ' . $api_url;
-        $response = '';
-    }
+        // 'http' => [
+            // 'method' => 'POST',
+            // 'header' => "Content-Length: 0\r\n",
+            // 'timeout' => 15,
+            // 'ignore_errors' => true
+        // ]
+    // ]));
+    // if ($response === false) {
+        // echo 'Error: Unable to connect to API: ' . $api_url;
+        // $response = '';
+    // }
     // $dataBySectionAfter = json_decode($response, true);
 
     // if ($dataBySectionAfter === null) {
