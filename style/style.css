@@ -1503,7 +1503,7 @@ button.secondary {
   max-width: 100%;
   margin-inline: auto;
   clip-path: inset(0 0 40% 0);
-  transform: scaleY(2.3);
+  transform: scaleY(1.7);
   transform-origin: center center;
 }
 
@@ -1512,7 +1512,7 @@ button.secondary {
     max-width: 100% !important;
     margin-inline: auto !important;
     clip-path: inset(0 0 40% 0) !important;
-    transform: scaleY(2.3) !important;
+    transform: scaleY(1.7) !important;
     transform-origin: center center !important;
   }
 }
