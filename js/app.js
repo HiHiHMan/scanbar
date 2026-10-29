@@ -1,97 +1,36 @@
-(() => {
-  const boxSearches = [0, 1, 2].map(index => {
-    const number = index + 1;
-    return { input: document.getElementById('search' + number), button: document.getElementById('searchButton' + number),
-      clear: document.getElementById('clearSearch' + number), results: document.getElementById('searchResults' + number), request: 0, data: [] };
-  });
-  const printSelectedButtons = [1, 2, 3].map(number => document.getElementById('printSelected' + number));
-  const selectedLabels = new Set();
-  const connection = document.getElementById('connection');
-  const count = document.getElementById('count');
-  const updated = document.getElementById('updated');
-  const boxes = [[], [], []];
-  let activeBox = 0;
-  const boxTabs = document.getElementById("boxTabs");
-  const boxNames = ["Label Repack", "Label ประตูรับ", "Label หน้าโหลด"];
-
-  const iconPaths = {
-    search: '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>',
-    x: '<path d="m18 6-12 12M6 6l12 12"></path>',
-    printer: '<path d="M6 9V3h12v6"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v7H6z"></path>',
-    trash: '<path d="M3 6h18M8 6V4h8v2m-11 0 1 15h10l1-15M10 10v7m4-7v7"></path>',
-    plus: '<path d="M12 5v14M5 12h14"></path>',
-    check: '<path d="m5 12 4 4L19 6"></path>',
-    box: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 8 9 5 9-5M3 8v9l9 5 9-5V8M12 13v9"></path>',
-    layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 12 9 5 9-5M3 16l9 5 9-5"></path>',
-    barcode: '<path d="M4 5v14M7 5v14M10 5v14M14 5v14M16 5v14M20 5v14"></path>',
-    package: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="M3 8v9l9 4 9-4V8M12 13v8"></path>'
-  };
-
-  function iconMarkup(name) {
-    return '<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (iconPaths[name] || '') + '</svg>';
-  }
-
-  function setButtonIcon(button, name, label) {
-    button.innerHTML = iconMarkup(name) + '<span>' + label + '</span>';
-  }
-
-  function decorateStaticButtons() {
-    [1, 2, 3].forEach(number => setButtonIcon(document.getElementById('printSelected' + number), 'printer', 'พิมพ์ที่เลือก'));
+(() => {\n  const Icons = {\n    iconMarkup(name) {\n      return '<svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + (iconPaths[name] || '') + '</svg>';\n    },\n\n    setButtonIcon(button, name, label) {\n      button.innerHTML = Icons.iconMarkup(name) + '<span>' + label + '</span>';\n    },\n\n    decorateStaticButtons() {\n      [1, 2, 3].forEach(number => Icons.setButtonIcon(document.getElementById('printSelected' + number), 'printer', 'พิมพ์ที่เลือก'));
     [1, 2, 3].forEach(number => {
-      setButtonIcon(document.getElementById('printBox' + number), 'layers', 'พิมพ์ทั้งหมด');
-      setButtonIcon(document.getElementById('clearBox' + number), 'trash', 'ล้าง Box');
-      setButtonIcon(document.getElementById('searchButton' + number), 'search', 'ค้นหา');
-      setButtonIcon(document.getElementById('clearSearch' + number), 'x', 'ล้าง');
-    });
-  }
-
-
-  function valueOf(row, aliases) {
-    const keys = Object.keys(row);
+      Icons.setButtonIcon(document.getElementById('printBox' + number), 'layers', 'พิมพ์ทั้งหมด');
+      Icons.setButtonIcon(document.getElementById('clearBox' + number), 'trash', 'ล้าง Box');
+      Icons.setButtonIcon(document.getElementById('searchButton' + number), 'search', 'ค้นหา');
+      Icons.setButtonIcon(document.getElementById('clearSearch' + number), 'x', 'ล้าง');
+    });\n    }\n  };\n\n\n  const Label = {\n    valueOf(row, aliases) {\n      const keys = Object.keys(row);
     const normalized = new Map(keys.map(key => [key.toLowerCase().replace(/[^a-z0-9]/g, ''), key]));
     for (const alias of aliases) {
       const key = normalized.get(alias.toLowerCase().replace(/[^a-z0-9]/g, ''));
       if (key !== undefined && row[key] !== null && row[key] !== undefined && String(row[key]).trim() !== '') return String(row[key]).trim();
     }
-    return '';
-  }
-
-  function field(row, aliases) { return valueOf(row, aliases) || '—'; }
-
-  function labelData(row) {
-    return {
-      location: field(row, ['Location']),
-      productID: field(row, ['ProductID']),
-      size1: valueOf(row, ['PSize1']),
-      size2: valueOf(row, ['PSize2']),
-      size3: valueOf(row, ['PSize3']),
-      description: field(row, ['Description']),
-      barcode: valueOf(row, ['BarcodeNo', 'Barcode'])
-    };
-  }
-
-  function makeLine(className, label, text) {
-    const line = document.createElement('div');
+    return '';\n    },\n\n    field(row, aliases) {\n      return Label.valueOf(row, aliases) || '—';\n    },\n\n    labelData(row) {\n      return {
+      location: Label.field(row, ['Location']),
+      productID: Label.field(row, ['ProductID']),
+      size1: Label.valueOf(row, ['PSize1']),
+      size2: Label.valueOf(row, ['PSize2']),
+      size3: Label.valueOf(row, ['PSize3']),
+      description: Label.field(row, ['Description']),
+      barcode: Label.valueOf(row, ['BarcodeNo', 'Barcode'])
+    };\n    },\n\n    makeLine(className, label, text) {\n      const line = document.createElement('div');
     line.className = 'label-line ' + className;
     const caption = document.createElement('span');
-    caption.className = 'field-name';
+    caption.className = 'Label.field-name';
     caption.textContent = label;
     line.append(caption, document.createTextNode(text));
-    return line;
-  }
-
-  function makeLocationLine(location) {
-    const line = document.createElement('div');
+    return line;\n    },\n\n    makeLocationLine(location) {\n      const line = document.createElement('div');
     line.className = 'label-line line-1';
     line.append(document.createTextNode('form '));
     const locationElement = document.createElement('strong');
     locationElement.textContent = location;
     line.appendChild(locationElement);
-    return line;
-  }
-
-  function createLabelPreview(row, boxIndex) {
-    const preview = document.createElement('div');
+    return line;\n    },\n\n    createLabelPreview(row, boxIndex) {\n      const preview = document.createElement('div');
     preview.className = 'label-preview';
 
     if (boxIndex === 1) {
@@ -100,7 +39,7 @@
       return preview;
     }
 
-    const data = labelData(row);
+    const data = Label.labelData(row);
     if (boxIndex === 2) preview.classList.add('label-preview--loading');
 
     if (boxIndex === 2) {
@@ -109,7 +48,7 @@
       line1.textContent = 'จ่ายหน้า Load';
       preview.appendChild(line1);
     } else {
-      preview.appendChild(makeLocationLine(data.location));
+      preview.appendChild(Label.makeLocationLine(data.location));
     }
 
     const productLine = document.createElement('div');
@@ -123,7 +62,7 @@
       .map(size => size && size !== '—' ? size : '9').join(' X ');
     productLine.append(productElement, sizeElement);
     preview.appendChild(productLine);
-    const descriptionLine = makeLine('line-3' + (boxIndex === 2 ? ' line-3-loading' : ''), '', data.description);
+    const descriptionLine = Label.makeLine('line-3' + (boxIndex === 2 ? ' line-3-loading' : ''), '', data.description);
     preview.appendChild(descriptionLine);
 
     const barcodeLine = document.createElement('div');
@@ -155,11 +94,8 @@
       preview.appendChild(footer);
     }
 
-    return preview;
-  }
-
-  function addTableMessage(boxIndex, message, error = false) {
-    const results = boxSearches[boxIndex].results;
+    return preview;\n    },\n\n    itemKey(row) {\n      const data = Label.labelData(row);
+    return [data.location, data.productID, data.barcode].join('|');\n    }\n  };\n\n\n  const Search = {\n    addTableMessage(boxIndex, message, error = false) {\n      const results = boxSearches[boxIndex].results;
     results.replaceChildren();
     const row = document.createElement('tr');
     const cell = document.createElement('td');
@@ -167,57 +103,58 @@
     cell.className = 'table-message' + (error ? ' error' : '');
     cell.textContent = message;
     row.appendChild(cell);
-    results.appendChild(row);
-  }
-
-  function itemKey(row) {
-    const data = labelData(row);
-    return [data.location, data.productID, data.barcode].join('|');
-  }
-
-  async function addToBox(row, boxIndex) {
-    if (boxes[boxIndex].some(item => itemKey(item) === itemKey(row))) return;
-    const barcode = valueOf(row, ['BarcodeNo', 'Barcode']);
-    if (!barcode) {
-      updated.textContent = 'ไม่สามารถเพิ่มได้: รายการนี้ไม่มี Barcode';
-      return;
-    }
-    try {
-      await managePrintList({ action: 'insert', barcode, category: boxNames[boxIndex] });
-      boxes[boxIndex].push(row);
-      renderBoxes();
-      renderSearchResults(boxIndex);
-      updated.textContent = 'เพิ่ม Barcode เข้า Box ' + (boxIndex + 1) + ' แล้ว';
-    } catch (error) {
-      updated.textContent = 'เพิ่มรายการไม่สำเร็จ: ' + error.message;
-    }
-  }
-
-  function renderSearchResults(boxIndex) {
-    const state = boxSearches[boxIndex];
+    results.appendChild(row);\n    },\n\n    renderSearchResults(boxIndex) {\n      const state = boxSearches[boxIndex];
     state.results.replaceChildren();
     if (!state.data.length) {
-      addTableMessage(boxIndex, state.input.value.trim() ? 'ไม่พบ Product ID นี้' : 'กรอก Product ID เพื่อเริ่มค้นหา');
+      Search.addTableMessage(boxIndex, state.input.value.trim() ? 'ไม่พบ Product ID นี้' : 'กรอก Product ID เพื่อเริ่มค้นหา');
       return;
     }
     state.data.forEach(row => {
-      const data = labelData(row);
+      const data = Label.labelData(row);
       const tr = document.createElement('tr');
       [data.location, data.productID, [data.size1, data.size2, data.size3].filter(Boolean).join(' × ') || '—', data.description, data.barcode || '—'].forEach(value => {
         const td = document.createElement('td'); td.textContent = value; tr.appendChild(td);
       });
       const actionCell = document.createElement('td'); actionCell.className = 'add-actions';
-      const exists = boxes[boxIndex].some(item => itemKey(item) === itemKey(row));
+      const exists = boxes[boxIndex].some(item => Label.itemKey(item) === Label.itemKey(row));
       const button = document.createElement('button'); button.type = 'button';
       button.className = exists ? 'secondary mini-button added-button' : 'mini-button add-button';
-      setButtonIcon(button, exists ? 'check' : 'plus', exists ? 'เพิ่มแล้ว' : 'เพิ่มลง ' + boxNames[boxIndex]); button.disabled = exists;
-      button.addEventListener('click', () => addToBox(row, boxIndex));
+      Icons.setButtonIcon(button, exists ? 'check' : 'plus', exists ? 'เพิ่มแล้ว' : 'เพิ่มลง ' + boxNames[boxIndex]); button.disabled = exists;
+      button.addEventListener('click', () => Boxes.addToBox(row, boxIndex));
       actionCell.appendChild(button); tr.appendChild(actionCell); state.results.appendChild(tr);
-    });
-  }
-
-  function renderBoxes() {
-    boxes.forEach((items, boxIndex) => {
+    });\n    },\n\n    async searchByProductID(boxIndex) {\n      const state = boxSearches[boxIndex], requestId = ++state.request, productID = state.input.value.trim();
+    if (!productID) {
+      state.data = []; Search.renderSearchResults(boxIndex); count.textContent = 'พร้อมค้นหา'; updated.textContent = 'กรอก Product ID เพื่อค้นหา'; return;
+    }
+    Search.addTableMessage(boxIndex, 'กำลังค้นหา Product ID…'); state.button.disabled = true;
+    try {
+      const response = await fetch('/api/labels/search?productID=' + encodeURIComponent(productID));
+      const payload = await response.json();
+      if (requestId !== state.request) return;
+      if (response.status === 404) state.data = [];
+      else if (!response.ok) throw new Error(payload.error || 'ค้นหาข้อมูลไม่สำเร็จ');
+      else state.data = Array.isArray(payload.data) ? payload.data : [];
+      Search.renderSearchResults(boxIndex);
+      count.textContent = 'Box ' + (boxIndex + 1) + ': ผลการค้นหา ' + state.data.length.toLocaleString() + ' รายการ';
+      updated.textContent = 'ค้นหา Product ID: ' + productID + ' · ' + new Date().toLocaleString('th-TH');
+    } catch (error) {
+      if (requestId !== state.request) return;
+      Search.addTableMessage(boxIndex, error.message, true);
+    } finally { if (requestId === state.request) state.button.disabled = false; }\n    }\n  };\n\n\n  const Boxes = {\n    async addToBox(row, boxIndex) {\n      if (boxes[boxIndex].some(item => Label.itemKey(item) === Label.itemKey(row))) return;
+    const barcode = Label.valueOf(row, ['BarcodeNo', 'Barcode']);
+    if (!barcode) {
+      updated.textContent = 'ไม่สามารถเพิ่มได้: รายการนี้ไม่มี Barcode';
+      return;
+    }
+    try {
+      await Api.managePrintList({ action: 'insert', barcode, category: boxNames[boxIndex] });
+      boxes[boxIndex].push(row);
+      Boxes.renderBoxes();
+      Search.renderSearchResults(boxIndex);
+      updated.textContent = 'เพิ่ม Barcode เข้า Box ' + (boxIndex + 1) + ' แล้ว';
+    } catch (error) {
+      updated.textContent = 'เพิ่มรายการไม่สำเร็จ: ' + error.message;
+    }\n    },\n\n    renderBoxes() {\n      boxes.forEach((items, boxIndex) => {
       const number = boxIndex + 1;
       const container = document.getElementById('box' + number);
       const section = container.closest('.queue-section');
@@ -250,7 +187,7 @@
         const label = document.createElement('span');
         label.className = 'item-index';
         label.textContent = '# ' + String(itemIndex + 1).padStart(2, '0');
-        const selectionKey = boxIndex + '::' + itemKey(item);
+        const selectionKey = boxIndex + '::' + Label.itemKey(item);
         const selectWrap = document.createElement('label');
         selectWrap.className = 'label-select';
         const checkbox = document.createElement('input');
@@ -260,7 +197,7 @@
         checkbox.addEventListener('change', () => {
           if (checkbox.checked) selectedLabels.add(selectionKey);
           else selectedLabels.delete(selectionKey);
-          updatePrintSelectionUI();
+          Print.updatePrintSelectionUI();
         });
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
         let quantityInput = null;
@@ -276,39 +213,39 @@
           quantityInput.step = '1';
           quantityInput.value = '1';
           quantityInput.inputMode = 'numeric';
-          quantityInput.setAttribute('aria-label', 'จำนวนใบสำหรับ Barcode ' + labelData(item).barcode);
+          quantityInput.setAttribute('aria-label', 'จำนวนใบสำหรับ Barcode ' + Label.labelData(item).barcode);
           quantityWrap.appendChild(quantityInput);
         }
         const printButton = document.createElement('button');
         printButton.type = 'button';
         printButton.className = 'label-action print-label-button';
-        printButton.innerHTML = iconMarkup('printer');
+        printButton.innerHTML = Icons.iconMarkup('printer');
         printButton.setAttribute('aria-label', 'พิมพ์ฉลาก');
         printButton.title = 'พิมพ์ฉลาก';
         if (boxIndex === 1) {
           printButton.disabled = true;
           printButton.title = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
         }
-        printButton.addEventListener('click', () => printSingleLabel(boxIndex, itemIndex));
+        printButton.addEventListener('click', () => Print.printSingleLabel(boxIndex, itemIndex));
         const remove = document.createElement('button');
         remove.type = 'button';
         remove.className = 'remove-button';
-        remove.innerHTML = iconMarkup('trash');
+        remove.innerHTML = Icons.iconMarkup('trash');
         remove.setAttribute('aria-label', 'ลบฉลาก');
         remove.title = 'ลบฉลาก';
         remove.addEventListener('click', async () => {
-          const barcode = valueOf(item, ['BarcodeNo', 'Barcode']);
+          const barcode = Label.valueOf(item, ['BarcodeNo', 'Barcode']);
           if (!barcode) {
             updated.textContent = 'ไม่สามารถลบได้: ไม่พบ Barcode';
             return;
           }
           remove.disabled = true;
           try {
-            await managePrintList({ action: 'delete', barcode, category: boxNames[boxIndex] });
-            selectedLabels.delete(boxIndex + '::' + itemKey(item));
+            await Api.managePrintList({ action: 'delete', barcode, category: boxNames[boxIndex] });
+            selectedLabels.delete(boxIndex + '::' + Label.itemKey(item));
             boxes[boxIndex].splice(itemIndex, 1);
-            renderBoxes();
-            renderSearchResults(boxIndex);
+            Boxes.renderBoxes();
+            Search.renderSearchResults(boxIndex);
             updated.textContent = 'ลบ Barcode ออกจาก Box ' + (boxIndex + 1) + ' แล้ว';
           } catch (error) {
             updated.textContent = 'ลบรายการไม่สำเร็จ: ' + error.message;
@@ -317,11 +254,11 @@
         });
         if (quantityInput) head.append(label, quantityInput.parentElement, selectWrap, printButton, remove);
         else head.append(label, selectWrap, printButton, remove);
-        card.append(head, createLabelPreview(item, boxIndex));
+        card.append(head, Label.createLabelPreview(item, boxIndex));
         container.appendChild(card);
       });
     });
-    updatePrintSelectionUI();
+    Print.updatePrintSelectionUI();
     boxTabs.replaceChildren();
     boxes.forEach((items, boxIndex) => {
       const tab = document.createElement('button');
@@ -329,14 +266,10 @@
       tab.className = 'box-tab' + (boxIndex === activeBox ? ' active' : '');
       tab.setAttribute('role', 'tab');
       tab.setAttribute('aria-selected', String(boxIndex === activeBox));
-      tab.innerHTML = iconMarkup('box') + '<span>' + boxNames[boxIndex] + ' (' + items.length + ')</span>';
-      tab.addEventListener('click', () => { activeBox = boxIndex; renderBoxes(); });
+      tab.innerHTML = Icons.iconMarkup('box') + '<span>' + boxNames[boxIndex] + ' (' + items.length + ')</span>';
+      tab.addEventListener('click', () => { activeBox = boxIndex; Boxes.renderBoxes(); });
       boxTabs.appendChild(tab);
-    });
-  }
-
-  async function printAfterFontsReady() {
-    try {
+    });\n    }\n  };\n\n\n  const Print = {\n    async printAfterFontsReady() {\n      try {
       if (document.fonts && document.fonts.load) {
         await document.fonts.load('55px "LibreBarcode39"');
         await document.fonts.ready;
@@ -344,31 +277,19 @@
     } catch (error) {
       console.warn('Barcode font could not be loaded before printing:', error);
     }
-    window.print();
-  }
-
-  function printSingleLabel(boxIndex, itemIndex) {
-    if (boxIndex === 1) {
+    window.print();\n    },\n\n    printSingleLabel(boxIndex, itemIndex) {\n      if (boxIndex === 1) {
       updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
       return;
     }
     if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
-    printQueue(boxIndex, false, itemIndex);
-  }
-
-  function updatePrintSelectionUI() {
-    [0, 1, 2].forEach(boxIndex => {
+    Print.printQueue(boxIndex, false, itemIndex);\n    },\n\n    updatePrintSelectionUI() {\n      [0, 1, 2].forEach(boxIndex => {
       const number = boxIndex + 1;
-      const count = boxes[boxIndex].filter(item => selectedLabels.has(boxIndex + '::' + itemKey(item))).length;
+      const count = boxes[boxIndex].filter(item => selectedLabels.has(boxIndex + '::' + Label.itemKey(item))).length;
       document.getElementById('selectedCount' + number).textContent = count.toLocaleString();
       const button = printSelectedButtons[boxIndex];
       button.disabled = count === 0;
-      setButtonIcon(button, 'printer', 'พิมพ์ที่เลือก');
-    });
-  }
-
-  function printQueue(boxIndex = null, selectedOnly = false, singleItemIndex = null) {
-    if (boxIndex === 1) {
+      Icons.setButtonIcon(button, 'printer', 'พิมพ์ที่เลือก');
+    });\n    },\n\n    printQueue(boxIndex = null, selectedOnly = false, singleItemIndex = null) {\n      if (boxIndex === 1) {
       updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
       return;
     }
@@ -384,7 +305,7 @@
       const cardBox = Number(card.dataset.box);
       const itemIndex = Number(card.dataset.itemIndex);
       const item = boxes[cardBox]?.[itemIndex];
-      const key = item ? cardBox + '::' + itemKey(item) : '';
+      const key = item ? cardBox + '::' + Label.itemKey(item) : '';
       const inRequestedBox = boxIndex === null || cardBox === boxIndex;
       const isRequestedItem = singleItemIndex === null || itemIndex === singleItemIndex;
       if (item && inRequestedBox && isRequestedItem && (!selectedOnly || selectedLabels.has(key))) {
@@ -393,8 +314,6 @@
     });
 
     if (printableCards.length === 0) return;
-
-    // Validate quantity for every printable category before creating copies.
     for (const card of printableCards) {
       const cardBox = Number(card.dataset.box);
       if (cardBox === 1) continue;
@@ -418,8 +337,6 @@
         copy.dataset.printClone = 'true';
         copy.classList.add('print-target');
         copy.classList.remove('print-last');
-
-        // Only Label หน้าโหลด displays a Run Number in the footer.
         if (cardBox === 2) {
           const runElement = copy.querySelector('.run-number');
           if (runElement) runElement.textContent = run + '/' + quantity;
@@ -433,51 +350,32 @@
     if (printCards.length === 0) return;
     printCards.forEach(card => { card.classList.add('print-target'); card.classList.remove('print-last'); });
     printCards[printCards.length - 1].classList.add('print-last');
-    printAfterFontsReady();
-  }
-
-  window.addEventListener('afterprint', () => {
-    document.querySelectorAll('.queue-item').forEach(card => {
-      card.classList.remove('print-target', 'print-last');
-      if (card.dataset.printClone === 'true') card.remove();
-    });
-  });
-
-  async function managePrintList(payload) {
-    const response = await fetch('/api/label-print-list', {
+    Print.printAfterFontsReady();\n    }\n  };\n\n\n  const Api = {\n    async managePrintList(payload) {\n      const response = await fetch('/api/label-print-list', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || 'API request failed');
-    return result;
-  }
-
-  async function loadPrintList() {
-    try {
+    return result;\n    },\n\n    async loadPrintList() {\n      try {
       const response = await fetch('/api/label-print-list');
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || 'โหลดรายการ Box ไม่สำเร็จ');
       boxes.forEach(items => items.splice(0, items.length));
       (Array.isArray(payload.data) ? payload.data : []).forEach(row => {
-        const category = valueOf(row, ['Category']);
+        const category = Label.valueOf(row, ['Category']);
         const boxIndex = ({ 'Label Repack': 0, 'Label ประตูรับ': 1, 'Label หน้าโหลด': 2 })[category];
         if (boxIndex === undefined) return;
-        if (!boxes[boxIndex].some(item => itemKey(item) === itemKey(row))) {
+        if (!boxes[boxIndex].some(item => Label.itemKey(item) === Label.itemKey(row))) {
           boxes[boxIndex].push(row);
         }
       });
-      renderBoxes();
-      boxSearches.forEach((_, index) => renderSearchResults(index));
+      Boxes.renderBoxes();
+      boxSearches.forEach((_, index) => Search.renderSearchResults(index));
       updated.textContent = 'โหลดรายการจากฐานข้อมูลแล้ว';
     } catch (error) {
       updated.textContent = 'โหลดรายการ Box ไม่สำเร็จ: ' + error.message;
-    }
-  }
-
-  async function checkConnection() {
-    try {
+    }\n    },\n\n    async checkConnection() {\n      try {
       const response = await fetch('/api/health');
       if (!response.ok) throw new Error('health check failed');
       connection.textContent = '● SQL Server เชื่อมต่อแล้ว';
@@ -487,54 +385,65 @@
       connection.textContent = 'ไม่สามารถตรวจสอบ API ได้';
       connection.style.background = '#fee4e2';
       connection.style.color = '#b42318';
-    }
-  }
+    }\n    }\n  };\n
+  const boxSearches = [0, 1, 2].map(index => {
+    const number = index + 1;
+    return { input: document.getElementById('search' + number), button: document.getElementById('searchButton' + number),
+      clear: document.getElementById('clearSearch' + number), results: document.getElementById('searchResults' + number), request: 0, data: [] };
+  });
+  const printSelectedButtons = [1, 2, 3].map(number => document.getElementById('printSelected' + number));
+  const selectedLabels = new Set();
+  const connection = document.getElementById('connection');
+  const count = document.getElementById('count');
+  const updated = document.getElementById('updated');
+  const boxes = [[], [], []];
+  let activeBox = 0;
+  const boxTabs = document.getElementById("boxTabs");
+  const boxNames = ["Label Repack", "Label ประตูรับ", "Label หน้าโหลด"];
 
-  async function searchByProductID(boxIndex) {
-    const state = boxSearches[boxIndex], requestId = ++state.request, productID = state.input.value.trim();
-    if (!productID) {
-      state.data = []; renderSearchResults(boxIndex); count.textContent = 'พร้อมค้นหา'; updated.textContent = 'กรอก Product ID เพื่อค้นหา'; return;
-    }
-    addTableMessage(boxIndex, 'กำลังค้นหา Product ID…'); state.button.disabled = true;
-    try {
-      const response = await fetch('/api/labels/search?productID=' + encodeURIComponent(productID));
-      const payload = await response.json();
-      if (requestId !== state.request) return;
-      if (response.status === 404) state.data = [];
-      else if (!response.ok) throw new Error(payload.error || 'ค้นหาข้อมูลไม่สำเร็จ');
-      else state.data = Array.isArray(payload.data) ? payload.data : [];
-      renderSearchResults(boxIndex);
-      count.textContent = 'Box ' + (boxIndex + 1) + ': ผลการค้นหา ' + state.data.length.toLocaleString() + ' รายการ';
-      updated.textContent = 'ค้นหา Product ID: ' + productID + ' · ' + new Date().toLocaleString('th-TH');
-    } catch (error) {
-      if (requestId !== state.request) return;
-      addTableMessage(boxIndex, error.message, true);
-    } finally { if (requestId === state.request) state.button.disabled = false; }
-  }
+  const iconPaths = {
+    search: '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path>',
+    x: '<path d="m18 6-12 12M6 6l12 12"></path>',
+    printer: '<path d="M6 9V3h12v6"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><path d="M6 14h12v7H6z"></path>',
+    trash: '<path d="M3 6h18M8 6V4h8v2m-11 0 1 15h10l1-15M10 10v7m4-7v7"></path>',
+    plus: '<path d="M12 5v14M5 12h14"></path>',
+    check: '<path d="m5 12 4 4L19 6"></path>',
+    box: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 8 9 5 9-5M3 8v9l9 5 9-5V8M12 13v9"></path>',
+    layers: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="m3 12 9 5 9-5M3 16l9 5 9-5"></path>',
+    barcode: '<path d="M4 5v14M7 5v14M10 5v14M14 5v14M16 5v14M20 5v14"></path>',
+    package: '<path d="m12 3 9 5-9 5-9-5 9-5Z"></path><path d="M3 8v9l9 4 9-4V8M12 13v8"></path>'
+  };
+
+  window.addEventListener('afterprint', () => {
+    document.querySelectorAll('.queue-item').forEach(card => {
+      card.classList.remove('print-target', 'print-last');
+      if (card.dataset.printClone === 'true') card.remove();
+    });
+  });
 
   boxSearches.forEach((state, boxIndex) => {
     state.input.addEventListener('keydown', event => {
-      if (event.key !== 'Enter') return; event.preventDefault(); searchByProductID(boxIndex);
+      if (event.key !== 'Enter') return; event.preventDefault(); Search.searchByProductID(boxIndex);
     });
-    state.button.addEventListener('click', () => searchByProductID(boxIndex));
+    state.button.addEventListener('click', () => Search.searchByProductID(boxIndex));
     state.clear.addEventListener('click', () => {
       state.input.value = ''; state.data = []; state.request++; state.button.disabled = false;
-      renderSearchResults(boxIndex); count.textContent = 'พร้อมค้นหา';
+      Search.renderSearchResults(boxIndex); count.textContent = 'พร้อมค้นหา';
       updated.textContent = 'ล้างคำค้นหา Box ' + (boxIndex + 1) + ' แล้ว'; state.input.focus();
     });
   });
-  printSelectedButtons.forEach((button, boxIndex) => button.addEventListener('click', () => printQueue(boxIndex, true)));
+  printSelectedButtons.forEach((button, boxIndex) => button.addEventListener('click', () => Print.printQueue(boxIndex, true)));
   [0, 1, 2].forEach(index => {
     const number = index + 1;
     document.getElementById('clearBox' + number).addEventListener('click', async event => {
       const button = event.currentTarget;
       button.disabled = true;
       try {
-        await managePrintList({ action: 'clearCategory', category: boxNames[index] });
-        boxes[index].forEach(item => selectedLabels.delete(index + '::' + itemKey(item)));
+        await Api.managePrintList({ action: 'clearCategory', category: boxNames[index] });
+        boxes[index].forEach(item => selectedLabels.delete(index + '::' + Label.itemKey(item)));
         boxes[index] = [];
-        renderBoxes();
-        renderSearchResults(index);
+        Boxes.renderBoxes();
+        Search.renderSearchResults(index);
         updated.textContent = 'ล้างรายการ Box ' + number + ' แล้ว';
       } catch (error) {
         updated.textContent = 'ล้าง Box ไม่สำเร็จ: ' + error.message;
@@ -542,12 +451,12 @@
         button.disabled = boxes[index].length === 0;
       }
     });
-    document.getElementById('printBox' + number).addEventListener('click', () => printQueue(index));
+    document.getElementById('printBox' + number).addEventListener('click', () => Print.printQueue(index));
   });
 
-  decorateStaticButtons();
-  renderBoxes();
-  boxSearches.forEach((_, index) => renderSearchResults(index));
-  loadPrintList();
-  checkConnection();
+  Icons.decorateStaticButtons();
+  Boxes.renderBoxes();
+  boxSearches.forEach((_, index) => Search.renderSearchResults(index));
+  Api.loadPrintList();
+  Api.checkConnection();
 })();
