@@ -134,11 +134,12 @@
     barcodeBars.textContent = '*' + cleanBarcode + '*';
     barcodeLine.appendChild(barcodeBars);
 
-    const barcodeNumber = document.createElement('div');
-    barcodeNumber.className = 'barcode-number';
-    barcodeNumber.textContent = cleanBarcode;
-    barcodeLine.appendChild(barcodeNumber);
     preview.appendChild(barcodeLine);
+
+    const barcodeNumberLine = document.createElement('div');
+    barcodeNumberLine.className = 'label-line line-5 barcode-number';
+    barcodeNumberLine.textContent = cleanBarcode;
+    preview.appendChild(barcodeNumberLine);
 
     if (boxIndex === 2) {
       const footer = document.createElement('div');
