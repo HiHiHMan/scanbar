@@ -71,16 +71,11 @@
       const preview = document.createElement('div');
     preview.className = 'label-preview';
 
-    if (boxIndex === 1) {
-      preview.classList.add('label-preview--unavailable');
-      preview.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
-      return preview;
-    }
-
     const data = Label.labelData(row);
-    if (boxIndex === 2) preview.classList.add('label-preview--loading');
+    const isLoadingStyle = boxIndex === 1 || boxIndex === 2;
+    if (isLoadingStyle) preview.classList.add('label-preview--loading');
 
-    if (boxIndex === 2) {
+    if (isLoadingStyle) {
       const line1 = document.createElement('div');
       line1.className = 'label-line line-1';
       line1.textContent = 'จ่ายหน้า Load';
@@ -100,9 +95,11 @@
       .map(size => size && size !== '—' ? size : '9').join(' X ');
     productLine.append(productElement, sizeElement);
     preview.appendChild(productLine);
-    const descriptionLine = Label.makeLine('line-3' + (boxIndex === 2 ? ' line-3-loading' : ''), '', data.description);
+    const descriptionLine = Label.makeLine('line-3' + (isLoadingStyle ? ' line-3-loading' : ''), '', data.description);
     preview.appendChild(descriptionLine);
 
+    // Label ประตูรับ uses the loading-label layout, but without barcode content.
+    if (boxIndex !== 1) {
     const barcodeLine = document.createElement('div');
     barcodeLine.className = 'label-line line-4' + (boxIndex === 2 ? ' barcode-line-repack' : '');
     const barcodeBars = document.createElement('div');
@@ -117,8 +114,9 @@
     barcodeNumberLine.className = 'label-line line-5 barcode-number' + (boxIndex === 2 ? ' barcode-number-repack' : '');
     barcodeNumberLine.textContent = cleanBarcode;
     preview.appendChild(barcodeNumberLine);
+    }
 
-    if (boxIndex === 2) {
+    if (isLoadingStyle) {
       const footer = document.createElement('div');
       footer.className = 'label-footer';
       const date = document.createElement('span');
@@ -273,7 +271,7 @@
         });
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
         let quantityInput = null;
-        if (boxIndex !== 1) {
+        if (boxIndex !== 0) {
           const quantityWrap = document.createElement('label');
           quantityWrap.className = 'print-quantity-wrap';
           quantityWrap.appendChild(document.createTextNode('จำนวนใบ'));
@@ -294,10 +292,6 @@
         printButton.innerHTML = Icons.iconMarkup('printer');
         printButton.setAttribute('aria-label', 'พิมพ์ฉลาก');
         printButton.title = 'พิมพ์ฉลาก';
-        if (boxIndex === 1) {
-          printButton.disabled = true;
-          printButton.title = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
-        }
         printButton.addEventListener('click', () => Print.printSingleLabel(boxIndex, itemIndex));
         const remove = document.createElement('button');
         remove.type = 'button';
@@ -361,10 +355,6 @@
     },
 
     printSingleLabel(boxIndex, itemIndex) {
-      if (boxIndex === 1) {
-      updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
-      return;
-    }
     if (!boxes[boxIndex] || !boxes[boxIndex][itemIndex]) return;
     Print.printQueue(boxIndex, false, itemIndex);
     },
@@ -381,11 +371,6 @@
     },
 
     printQueue(boxIndex = null, selectedOnly = false, singleItemIndex = null) {
-      if (boxIndex === 1) {
-      updated.textContent = 'ไม่พบรูปแบบ Label สำหรับ Label ประตูรับ';
-      return;
-    }
-
     const cards = [...document.querySelectorAll('.queue-item')];
     const printableCards = [];
     cards.forEach(card => {
@@ -408,7 +393,6 @@
     if (printableCards.length === 0) return;
     for (const card of printableCards) {
       const cardBox = Number(card.dataset.box);
-      if (cardBox === 1) continue;
       const input = card.querySelector('.print-quantity');
       const quantity = Number(input?.value ?? 1);
       if (!Number.isInteger(quantity) || quantity < 1 || quantity > 500) {
@@ -421,15 +405,13 @@
     const printCards = [];
     for (const card of printableCards) {
       const cardBox = Number(card.dataset.box);
-      if (cardBox === 1) continue;
-
       const quantity = Number(card.querySelector('.print-quantity')?.value ?? 1);
       for (let run = 1; run <= quantity; run++) {
         const copy = card.cloneNode(true);
         copy.dataset.printClone = 'true';
         copy.classList.add('print-target');
         copy.classList.remove('print-last');
-        if (cardBox === 2) {
+        if (cardBox === 1 || cardBox === 2) {
           const runElement = copy.querySelector('.run-number');
           if (runElement) runElement.textContent = run + '/' + quantity;
         }
