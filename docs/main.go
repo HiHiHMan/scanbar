@@ -13,20 +13,21 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	_ "github.com/microsoft/go-mssqldb"
 	"github.com/joho/godotenv"
 	"github.com/kardianos/service"
+	_ "github.com/microsoft/go-mssqldb"
 )
 
-// Settings: edit these defaults here, or override them with values in the local conf.env file.
+// Settings: edit these defaults here, or override them with values in the local .env file.
 var (
 	defaultDBHost     = "192.168.123.45"
 	defaultDBPort     = "1433"
 	defaultDBName     = "Inventory"
-	defaultDBUser     = "" // Prefer setting DB_USER in conf.env
-	defaultDBPassword = "" // Prefer setting DB_PASSWORD in conf.env
+	defaultDBUser     = "" // Prefer setting DB_USER in .env
+	defaultDBPassword = "" // Prefer setting DB_PASSWORD in .env
 	defaultAPIAddr    = ":8080"
 )
 
@@ -38,29 +39,21 @@ type apiError struct {
 	Error string `json:"error"`
 }
 
-// program implements service.Interface for Windows Service management.
-type program struct {
-	server *http.Server
-	db     *sql.DB
-}
-
-func (p *program) Start(s service.Service) error {
-	go p.run()
-	return nil
-}
-
-func (p *program) run() {
+func buildServer() (*http.Server, *sql.DB, error) {
+	if err := loadEnvFile(".env"); err != nil {
+		return nil, nil, fmt.Errorf("load .env: %w", err)
+	}
 	addr := env("API_ADDR", defaultAPIAddr)
 	db, err := openDatabase()
 	if err != nil {
-		log.Fatalf("database configuration error: %v", err)
+		return nil, nil, fmt.Errorf("database configuration error: %w", err)
 	}
-	p.db = db
 
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Second)
 	defer cancel()
 	if err := db.PingContext(ctx); err != nil {
-		log.Fatalf("cannot connect to SQL Server: %v", err)
+		db.Close()
+		return nil, nil, fmt.Errorf("cannot connect to SQL Server: %w", err)
 	}
 
 	a := &app{db: db}
@@ -75,7 +68,7 @@ func (p *program) run() {
 	mux.Handle("GET /font/", http.StripPrefix("/font/", http.FileServer(http.Dir("font"))))
 	mux.HandleFunc("GET /", serveIndex)
 
-	p.server = &http.Server{
+	server := &http.Server{
 		Addr:              addr,
 		Handler:           securityHeaders(mux),
 		ReadHeaderTimeout: 5 * time.Second,
@@ -84,96 +77,8 @@ func (p *program) run() {
 		IdleTimeout:       60 * time.Second,
 	}
 
-	log.Printf("Scanbar running at http://localhost%s", addr)
-	if err := p.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalf("HTTP server error: %v", err)
-	}
-}
-
-func (p *program) Stop(s service.Service) error {
-	if p.server != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		_ = p.server.Shutdown(ctx)
-	}
-	if p.db != nil {
-		_ = p.db.Close()
-	}
-	log.Println("Scanbar service stopped.")
-	return nil
-}
-
-func main() {
-	// 1. ลองโหลด conf.env จากโฟลเดอร์ปัจจุบันก่อน (สำหรับตอนใช้ go run)
-	_ = godotenv.Load("conf.env")
-
-	// 2. จัดการเรื่อง Path ของไฟล์ .exe และโหลด conf.env จากโฟลเดอร์เดียวกัน (สำหรับตอนรันจริง / Service)
-	if ex, err := os.Executable(); err == nil {
-		exeDir := filepath.Dir(ex)
-		envPath := filepath.Join(exeDir, "conf.env")
-		if err := godotenv.Load(envPath); err == nil {
-			log.Printf("โหลดไฟล์ conf.env สำเร็จจากพาธ: %s", envPath)
-		}
-		os.Chdir(exeDir)
-	}
-
-	// เช็คและกำหนดค่าพอร์ต API_ADDR หากยังไม่ได้กำหนด
-	if os.Getenv("API_ADDR") == "" {
-		os.Setenv("API_ADDR", defaultAPIAddr)
-	}
-
-	svcConfig := &service.Config{
-		Name:        "Port4071_ScanBarService",
-		DisplayName: "Port:4071-ScanBar Web Service",
-		Description: "Port:4071-Inventory and Label Printing Web Service.",
-	}
-
-	prg := &program{}
-	s, err := service.New(prg, svcConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "install":
-			err = s.Install()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("Service Installed Successfully")
-			return
-
-		case "uninstall", "remove":
-			err = s.Uninstall()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("Service Uninstalled Successfully")
-			return
-
-		case "start":
-			err = s.Start()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("Service Started Successfully")
-			return
-
-		case "stop":
-			err = s.Stop()
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println("Service Stopped Successfully")
-			return
-		}
-	}
-
-	err = s.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Printf("BarLabel running at http://localhost%s", addr)
+	return server, db, nil
 }
 
 func openDatabase() (*sql.DB, error) {
@@ -190,6 +95,8 @@ func openDatabase() (*sql.DB, error) {
 		return nil, errors.New("set DB_USER and DB_PASSWORD environment variables")
 	}
 
+	// SQL Server connection string. TLS is enabled; TrustServerCertificate is
+	// suitable for a private network with a self-signed server certificate.
 	connString := fmt.Sprintf("sqlserver://%s:%s@%s:%d?database=%s&encrypt=true&TrustServerCertificate=true",
 		urlEscape(user), urlEscape(password), host, port, urlEscape(database))
 	db, err := sql.Open("sqlserver", connString)
@@ -203,11 +110,25 @@ func openDatabase() (*sql.DB, error) {
 }
 
 func urlEscape(value string) string {
+	// QueryEscape is also safe for userinfo here; convert '+' so it is not
+	// interpreted as a space by URL parsers.
 	return strings.ReplaceAll(urlQueryEscape(value), "+", "%20")
 }
 
 func urlQueryEscape(value string) string {
+	// Keep URL escaping in the standard library and avoid manual string handling.
 	return url.QueryEscape(value)
+}
+
+// loadEnvFile loads optional environment settings without overriding existing OS variables.
+func loadEnvFile(path string) error {
+	if _, err := os.Stat(path); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	return godotenv.Load(path)
 }
 
 func env(key, fallback string) string {
@@ -489,4 +410,98 @@ func securityHeaders(next http.Handler) http.Handler {
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		next.ServeHTTP(w, r)
 	})
+}
+
+type barLabelProgram struct {
+	mu     sync.Mutex
+	server *http.Server
+	db     *sql.DB
+}
+
+func (p *barLabelProgram) Start(s service.Service) error {
+	// Keep the launch directory for interactive runs (including go run .).
+	// Windows Service runs from a system directory, so use the executable directory.
+	if !service.Interactive() {
+		if err := setWorkingDirectory(); err != nil {
+			return fmt.Errorf("set working directory: %w", err)
+		}
+	}
+
+	server, db, err := buildServer()
+	if err != nil {
+		return err
+	}
+
+	p.mu.Lock()
+	p.server = server
+	p.db = db
+	p.mu.Unlock()
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Printf("BarLabel HTTP server stopped unexpectedly: %v", err)
+		}
+	}()
+	return nil
+}
+
+func (p *barLabelProgram) Stop(s service.Service) error {
+	p.mu.Lock()
+	server, db := p.server, p.db
+	p.server, p.db = nil, nil
+	p.mu.Unlock()
+	return shutdownApplication(server, db)
+}
+
+func main() {
+	// Load .env from the launch directory first, then from beside the executable.
+	if err := loadEnvFile(".env"); err != nil {
+		log.Fatalf("load .env: %v", err)
+	}
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatalf("resolve executable path: %v", err)
+	}
+	exeDir := filepath.Dir(exePath)
+	if err := loadEnvFile(filepath.Join(exeDir, ".env")); err != nil {
+		log.Fatalf("load .env beside executable: %v", err)
+	}
+
+	svcConfig := &service.Config{
+		Name:        "BarLabel",
+		DisplayName: "BarLabel",
+		Description: "BarLabel HTTP API for SQL Server",
+	}
+	svc, err := service.New(&barLabelProgram{}, svcConfig)
+	if err != nil {
+		log.Fatalf("create Windows service: %v", err)
+	}
+
+	if len(os.Args) > 1 {
+		var actionErr error
+		switch strings.ToLower(os.Args[1]) {
+		case "install":
+			actionErr = svc.Install()
+		case "uninstall":
+			actionErr = svc.Uninstall()
+		case "start":
+			actionErr = svc.Start()
+		case "stop":
+			actionErr = svc.Stop()
+		default:
+			if err := svc.Run(); err != nil {
+				log.Fatalf("BarLabel stopped: %v", err)
+			}
+			return
+		}
+		if actionErr != nil {
+			log.Fatalf("service command %q failed: %v", os.Args[1], actionErr)
+		}
+		log.Printf("service command %q completed", os.Args[1])
+		return
+	}
+
+	if err := svc.Run(); err != nil {
+		log.Fatalf("BarLabel stopped: %v", err)
+	}
 }
