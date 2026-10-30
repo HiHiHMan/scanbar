@@ -1473,3 +1473,44 @@ input[type=search] {
   background: linear-gradient(135deg, #fff8ed 0%, #f8e8d8 100%);
 }
 }
+
+/* Loading labels: keep PSize smaller and balance description/footer vertically. */
+.box-items .label-preview--loading .line-2 .psize {
+  font-size: 18px !important;
+  line-height: 1.1;
+}
+
+.box-items .label-preview--loading .line-3-loading {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
+.box-items .label-preview--loading .line-4 {
+  margin-top: 0 !important;
+}
+
+.box-items .label-preview--loading .label-footer {
+  margin-top: auto !important;
+  margin-bottom: 0 !important;
+}
+
+@media print {
+  .box-items .queue-item.print-target .label-preview--loading .line-2 .psize {
+    font-size: 18px !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview--loading .line-3-loading {
+    margin-top: auto !important;
+    margin-bottom: auto !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview--loading .line-4 {
+    margin-top: 0 !important;
+  }
+
+  .box-items .queue-item.print-target .label-preview--loading .label-footer {
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+  }
+}
+
