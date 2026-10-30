@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/kardianos/service"
 )
 
 // setWorkingDirectory makes .env and web assets resolve relative to the executable.
