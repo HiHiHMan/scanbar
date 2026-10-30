@@ -78,7 +78,7 @@
     if (isLoadingStyle) {
       const line1 = document.createElement('div');
       line1.className = 'label-line line-1';
-      line1.textContent = 'จ่ายหน้า Load';
+      line1.textContent = boxIndex === 1 ? 'ประตูรับ' : 'จ่ายหน้า Load';
       preview.appendChild(line1);
     } else {
       preview.appendChild(Label.makeLocationLine(data.location));
