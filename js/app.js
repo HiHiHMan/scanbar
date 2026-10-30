@@ -270,22 +270,19 @@
           Print.updatePrintSelectionUI();
         });
         selectWrap.append(checkbox, document.createTextNode('เลือกพิมพ์'));
-        let quantityInput = null;
-        if (boxIndex !== 0) {
-          const quantityWrap = document.createElement('label');
-          quantityWrap.className = 'print-quantity-wrap';
-          quantityWrap.appendChild(document.createTextNode('จำนวนใบ'));
-          quantityInput = document.createElement('input');
-          quantityInput.className = 'print-quantity';
-          quantityInput.type = 'number';
-          quantityInput.min = '1';
-          quantityInput.max = '500';
-          quantityInput.step = '1';
-          quantityInput.value = '1';
-          quantityInput.inputMode = 'numeric';
-          quantityInput.setAttribute('aria-label', 'จำนวนใบสำหรับ Barcode ' + Label.labelData(item).barcode);
-          quantityWrap.appendChild(quantityInput);
-        }
+        const quantityWrap = document.createElement('label');
+        quantityWrap.className = 'print-quantity-wrap';
+        quantityWrap.appendChild(document.createTextNode('จำนวนใบ'));
+        const quantityInput = document.createElement('input');
+        quantityInput.className = 'print-quantity';
+        quantityInput.type = 'number';
+        quantityInput.min = '1';
+        quantityInput.max = '500';
+        quantityInput.step = '1';
+        quantityInput.value = '1';
+        quantityInput.inputMode = 'numeric';
+        quantityInput.setAttribute('aria-label', 'จำนวนใบสำหรับ Barcode ' + Label.labelData(item).barcode);
+        quantityWrap.appendChild(quantityInput);
         const printButton = document.createElement('button');
         printButton.type = 'button';
         printButton.className = 'label-action print-label-button';
@@ -318,8 +315,7 @@
             remove.disabled = false;
           }
         });
-        if (quantityInput) head.append(label, quantityInput.parentElement, selectWrap, printButton, remove);
-        else head.append(label, selectWrap, printButton, remove);
+        head.append(label, quantityInput.parentElement, selectWrap, printButton, remove);
         card.append(head, Label.createLabelPreview(item, boxIndex));
         container.appendChild(card);
       });
