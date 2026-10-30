@@ -114,7 +114,13 @@ func main() {
 		if err := godotenv.Load(envPath); err == nil {
 			log.Printf("โหลดไฟล์ conf.env สำเร็จจากพาธ: %s", envPath)
 		}
-		os.Chdir(exeDir)
+		// Keep the project directory when running interactively (including go run .).
+		// A Windows Service starts from a system directory, so switch to the executable directory.
+		if !service.Interactive() {
+			if err := os.Chdir(exeDir); err != nil {
+				log.Fatalf("change working directory to %s: %v", exeDir, err)
+			}
+		}
 	}
 
 	// เช็คและกำหนดค่าพอร์ต API_ADDR หากยังไม่ได้กำหนด
