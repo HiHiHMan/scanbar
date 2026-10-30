@@ -1477,6 +1477,7 @@ input[type=search] {
 /* Loading labels: keep PSize smaller and balance description/footer vertically. */
 .box-items .label-preview--loading .line-2 .psize {
   font-size: 18px !important;
+  font-weight: 400 !important;
   line-height: 1.1;
 }
 
