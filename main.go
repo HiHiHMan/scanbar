@@ -419,8 +419,12 @@ type barLabelProgram struct {
 }
 
 func (p *barLabelProgram) Start(s service.Service) error {
-	if err := setWorkingDirectory(); err != nil {
-		return fmt.Errorf("set working directory: %w", err)
+	// Keep the launch directory for interactive runs (including go run .).
+	// Windows Service runs from a system directory, so use the executable directory.
+	if !service.Interactive() {
+		if err := setWorkingDirectory(); err != nil {
+			return fmt.Errorf("set working directory: %w", err)
+		}
 	}
 
 	server, db, err := buildServer()
